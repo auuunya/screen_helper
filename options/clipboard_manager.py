@@ -31,4 +31,4 @@ class ClipboardManager:
         try:
             pyperclip.copy(text)
         except Exception as e:
-            raise
+            raise ValueError(f"Could not copy {str(e)}")
