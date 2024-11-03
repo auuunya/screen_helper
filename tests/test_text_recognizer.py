@@ -1,11 +1,5 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
-'''
-@File    :   test_image_matcher.py
-@Desc    :   None
-'''
-
-# here put the import lib
 from core import ScreenCapture
 from core import TextRecognizer
 from core import OCRRecognizer

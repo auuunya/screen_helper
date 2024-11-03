@@ -1,11 +1,5 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
-'''
-@File    :   main.py
-@Desc    :   None
-'''
-
-# here put the import lib
 import time
 import os
 import glob

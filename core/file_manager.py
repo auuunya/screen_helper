@@ -1,13 +1,4 @@
-#!/usr/bin/env python
-# -*- encoding: utf-8 -*-
-'''
-@File    :   file_manager.py
-@Desc    :   None
-'''
-
-# here put the import lib
-
-# TODO: Feat 文件管理 未完成
+# TODO: coding
 class FileManager:
     @staticmethod
     def read(file_path: str) -> str:

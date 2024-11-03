@@ -1,11 +1,3 @@
-#!/usr/bin/env python
-# -*- encoding: utf-8 -*-
-'''
-@File    :   keyboard_controller.py
-@Desc    :   None
-'''
-
-# here put the import lib
 import pyautogui
 import pyperclip
 from typing import Optional, Literal

@@ -1,11 +1,3 @@
-#!/usr/bin/env python
-# -*- encoding: utf-8 -*-
-'''
-@File    :   logger.py
-@Desc    :   None
-'''
-
-# here put the import lib
 import os
 import logging
 from logging.handlers import TimedRotatingFileHandler

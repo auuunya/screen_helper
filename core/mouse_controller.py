@@ -1,11 +1,3 @@
-#!/usr/bin/env python
-# -*- encoding: utf-8 -*-
-'''
-@File    :   mouse_controller.py
-@Desc    :   None
-'''
-
-# here put the import lib
 from .defs import ScreenHelperDefs
 from typing import Tuple
 import pyautogui
@@ -67,8 +59,8 @@ class MouseController:
         scroll_map = {
             ScreenHelperDefs.UP: delta,
             ScreenHelperDefs.DOWN: -delta,
-            ScreenHelperDefs.LEFT: (-delta, True),  # 向左滚动
-            ScreenHelperDefs.RIGHT: (delta, True),  # 向右滚动
+            ScreenHelperDefs.LEFT: (-delta, True),
+            ScreenHelperDefs.RIGHT: (delta, True),
         }
         
         if direction in scroll_map:

@@ -1,11 +1,3 @@
-#!/usr/bin/env python
-# -*- encoding: utf-8 -*-
-'''
-@File    :   ocr_base.py
-@Desc    :   None
-'''
-
-# here put the import lib
 from typing import Dict, Any, Union
 import numpy as np
 import pytesseract
@@ -62,7 +54,7 @@ class TesseractOCR(BaseOCR):
 class OCRFactory:
     _ocr_engines = {
         "tesseract": TesseractOCR,
-        # 将来可以添加其他 OCR 引擎
+        # add other OCR engine
     }
 
     @staticmethod

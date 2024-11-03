@@ -1,11 +1,3 @@
-#!/usr/bin/env python
-# -*- encoding: utf-8 -*-
-'''
-@File    :   screen_capture.py
-@Desc    :   None
-'''
-
-# here put the import lib
 from typing import Tuple, Optional
 import os
 import glob

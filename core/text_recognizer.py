@@ -1,11 +1,3 @@
-#!/usr/bin/env python
-# -*- encoding: utf-8 -*-
-'''
-@File    :   text_recognizer.py
-@Desc    :   None
-'''
-
-# here put the import lib
 import cv2
 import numpy as np
 from typing import List, Tuple

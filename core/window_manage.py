@@ -1,18 +1,9 @@
-#!/usr/bin/env python
-# -*- encoding: utf-8 -*-
-'''
-@File    :   window_matcher.py
-@Desc    :   None
-'''
-
-# here put the import lib
 import win32gui
 import win32api
 import win32con
 import re
 import time
-
-
+# TODO: coding
 class WindowManager:
     def __init__(self):
         self.hwnd = None
@@ -32,7 +23,6 @@ class WindowManager:
         window_title = win32gui.GetWindowText(hwnd)
         if re.search(self.partial_title, window_title, re.IGNORECASE):
             self.hwnd = hwnd
-            # print(f"找到匹配窗口: {window_title}, 句柄: {hwnd}")
             return
         win32gui.EnumChildWindows(hwnd, self._child_window_enum_callback, None)
     
@@ -40,7 +30,6 @@ class WindowManager:
         child_window_title = win32gui.GetWindowText(hwnd)
         if re.search(self.partial_title, child_window_title, re.IGNORECASE):
             self.hwnd = hwnd
-            # print(f"找到子窗口: {child_window_title}, 句柄: {hwnd}")
             return False
 
     def get_window_rect(self):

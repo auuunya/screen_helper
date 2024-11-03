@@ -1,11 +1,3 @@
-#!/usr/bin/env python
-# -*- encoding: utf-8 -*-
-'''
-@File    :   main.py
-@Desc    :   None
-'''
-
-# here put the import lib
 import uuid
 from typing import List, Dict, Any, Callable
 

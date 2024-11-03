@@ -1,13 +1,4 @@
-#!/usr/bin/env python
-# -*- encoding: utf-8 -*-
-'''
-@File    :   config.py
-@Desc    :   None
-'''
-
-# here put the import lib
 import platform
-
 class BaseConfig:
     system_name = platform.system()
     character = "\r\n" if system_name == "Windows" else "\n"

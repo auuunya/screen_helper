@@ -1,11 +1,5 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
-'''
-@File    :   test_image_matcher.py
-@Desc    :   None
-'''
-
-# here put the import lib
 from core.defs import ScreenHelperDefs
 from core.screen_capture import ScreenCapture
 from core.image_matcher import ImageMatcher

@@ -1,16 +1,5 @@
-#!/usr/bin/env python
-# -*- encoding: utf-8 -*-
-'''
-@File    :   defs.py
-@Desc    :   None
-'''
-
-# here put the import lib
 class ScreenHelperDefs:
-
     CV_THRESHOLD = 0.8
-
-
     ACTION_TYPE_TEXT = "action_type_text"
     OPTIONS = "options"
     METHOD = "method"
