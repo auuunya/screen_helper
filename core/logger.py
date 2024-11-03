@@ -2,8 +2,6 @@
 # -*- encoding: utf-8 -*-
 '''
 @File    :   logger.py
-@Time    :   2024/10/23 15:38:54
-@Author  :   auuu_nya 
 @Desc    :   None
 '''
 

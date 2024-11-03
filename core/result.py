@@ -1,3 +1,12 @@
+#!/usr/bin/env python
+# -*- encoding: utf-8 -*-
+'''
+@File    :   result.py
+@Desc    :   None
+'''
+
+# here put the import lib
+
 class Result:
     """
     结果类，用于封装操作的结果信息。

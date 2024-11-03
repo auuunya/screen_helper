@@ -2,22 +2,33 @@
 # -*- encoding: utf-8 -*-
 '''
 @File    :   config.py
-@Time    :   2024/10/23 15:32:50
-@Author  :   auuu_nya 
 @Desc    :   None
 '''
 
 # here put the import lib
 import platform
 
-system_name = platform.system()
-character = "\r\n" if system_name == "Windows" else "\n"
-spacing = "GBK" if system_name == "Windows" else "utf-8"
-
 class BaseConfig:
-    # 根据操作系统设置缩放因子和阈值
+    system_name = platform.system()
+    character = "\r\n" if system_name == "Windows" else "\n"
+    spacing = "GBK" if system_name == "Windows" else "utf-8"
     scale_factor = 1 if system_name == "Windows" else 2
     threshold = 0.8
+    debug = False
+
+    @classmethod
+    def enable_debug(cls):
+        """
+        启用调试模式，将调试标志设置为 True。
+        """
+        cls.debug = True
+
+    @classmethod
+    def disable_debug(cls):
+        """
+        禁用调试模式，将调试标志设置为 False。
+        """
+        cls.debug = False
 
     @classmethod
     def set_scale_factor(cls, factor):
