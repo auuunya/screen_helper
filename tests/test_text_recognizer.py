@@ -11,18 +11,18 @@ def test_text_matches():
     texter = TextRecognizer()
     screen = ScreenCapture()
     s = screen.capture()
-    screen.record_screen_snapshot(s, f"{test_dir}/screen_shot.png")
+    utils.record_snapshot(s, f"{test_dir}/screen_shot.png")
     ocr_engine = OCRRecognizer(ocr_engine="tesseract", lang='eng', config=r'--oem 3 --psm 6 -c tessedit_char_whitelist=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ& ')
     result = ocr_engine.recognize_text(s)
     matches = texter.find_all_text_positions(result, "turnon")
     output_image_all = TextRecognizer.draw_matches(s, matches)
-    screen.record_screen_snapshot(output_image_all, f"{test_dir}/temp.png")
+    utils.record_snapshot(output_image_all, f"{test_dir}/temp.png")
 
 def test_image_match():
     texter = TextRecognizer()
     screen = ScreenCapture()
     s = screen.capture()
-    screen.record_screen_snapshot(s, f"{test_dir}/screen_shot.png")
+    utils.record_snapshot(s, f"{test_dir}/screen_shot.png")
     ocr_engine = OCRRecognizer(ocr_engine="tesseract", lang='eng', config=r'--oem 3 --psm 6 -c tessedit_char_whitelist=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ& ')
     result = ocr_engine.recognize_text(s)
     contexts = [
@@ -47,7 +47,7 @@ def test_image_match():
         output_image_all = TextRecognizer.draw_match(s, matches)
         if "context_matches" in matches:
             output_image_context = TextRecognizer.draw_matches(output_image_all, matches["context_matches"])
-        screen.record_screen_snapshot(output_image_context, f"{test_dir}/text_match_context.png")
+        utils.record_snapshot(output_image_context, f"{test_dir}/text_match_context.png")
 
 if __name__ == "__main__":
     test_image_match()

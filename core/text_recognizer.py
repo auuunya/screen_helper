@@ -108,36 +108,3 @@ class TextRecognizer:
                     }
         return None
     
-    @staticmethod
-    def draw_match(image: np.ndarray, match: dict, color: Tuple[int, int, int] = (0, 255, 0), thickness: int = 2) -> np.ndarray:
-        """
-        在图像上绘制单个匹配的矩形框。
-        
-        :param image: 原始图像
-        :param match: 匹配的字典，包含 'position' 和 'dimensions' 键
-        :param color: 矩形框的颜色
-        :param thickness: 边框厚度
-        """
-        center_x, center_y = match["position"]
-        width, height = match["dimensions"]
-        top_left = (int(center_x - width / 2), int(center_y - height / 2))
-        bottom_right = (int(center_x + width / 2), int(center_y + height / 2))
-        cv2.rectangle(image, top_left, bottom_right, color, thickness)
-        return image
-
-    @staticmethod
-    def draw_matches(image: np.ndarray, matches: List[dict], 
-                     color: Tuple[int, int, int] = (0, 255, 0), thickness: int = 2) -> np.ndarray:
-        """
-        批量绘制多个匹配到的文本区域矩形框。
-        
-        :param image: 原始图像
-        :param matches: 匹配到的坐标和尺寸列表 [(center_x1, center_y1, width1, height1), ...]
-        :param color: 绘制框的颜色 (B, G, R)，默认为绿色
-        :param thickness: 矩形框的边框宽度，默认为 2
-        :return: 绘制所有匹配位置矩形框的图像
-        """
-        image_copy = image.copy()
-        for match in matches:
-            image_copy = TextRecognizer.draw_match(image_copy, match, color=color, thickness=thickness)
-        return image_copy

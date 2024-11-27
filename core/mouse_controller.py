@@ -98,4 +98,4 @@ class MouseController:
         """
         target_x = x + offset_x
         target_y = y + offset_y
-        MouseController.drag_to(target_x, target_y, duration=duration, button=button)
+        MouseController.drag_cursor(target_x, target_y, duration=duration, button=button)

@@ -2,7 +2,6 @@ import cv2
 import numpy as np
 from typing import List, Tuple, Dict, Any, Union
 import uuid
-from .config import BaseConfig
 
 class Template:
     def __init__(self, identifier: str, template_image: np.ndarray):
@@ -16,24 +15,26 @@ class Template:
 
 class ImageMatcher:
 
-    def __init__(self, scale_factor: float = 1, threshold: float = 0.8):
+    def __init__(self, scale_factor: float = None, threshold: float = None):
         """
         初始化图像匹配器
         :param scale_factor: 图像缩放因子，用于调整待匹配图像的大小
         :param threshold: 匹配的阈值，控制匹配的灵敏度
         """
-        self.scale_factor = scale_factor
-        self.threshold = threshold
+        self._scale_factor = scale_factor
+        self._threshold = threshold
         self.templates = {}
 
-    @classmethod
-    def from_config(cls, config: BaseConfig):
+    def update_config(self, scale_factor: float = None, threshold: float = None):
         """
-        从配置类创建 ImageMatcher 实例
-        :param config: BaseConfig 的实例
-        :return: ImageMatcher 实例
+        更新匹配器的配置
+        :param scale_factor: 新的缩放因子
+        :param threshold: 新的匹配阈值
         """
-        return cls(scale_factor=config.scale_factor, threshold=config.threshold)
+        if scale_factor is not None:
+            self._scale_factor = scale_factor
+        if threshold is not None:
+            self._threshold = threshold
 
     def add_image_template(self, template_image: np.ndarray) -> str:
         """
@@ -92,7 +93,7 @@ class ImageMatcher:
             _, processed_image = cv2.threshold(processed_image, threshold_value, max_value, cv2.THRESH_BINARY)
         return processed_image
 
-    def find_template_locations(self, screen: np.ndarray, template: np.ndarray, threshold: float = 0.8) -> List[Tuple[int, int]]:
+    def find_template_locations(self, screen: np.ndarray, template: np.ndarray, threshold: float = None) -> List[Tuple[int, int]]:
         """
         在屏幕图像中查找模板图像，返回所有匹配的位置。
         
@@ -100,7 +101,9 @@ class ImageMatcher:
         :param template: 模板图像的 numpy 数组。
         :return: 所有找到的模板中心坐标 (x, y) 列表。
         """
-        screen_resized = cv2.resize(screen, None, fx=self.scale_factor, fy=self.scale_factor, interpolation=cv2.INTER_LINEAR)
+        if not threshold:
+            threshold = self._threshold
+        screen_resized = cv2.resize(screen, None, fx=self._scale_factor, fy=self._scale_factor, interpolation=cv2.INTER_LINEAR)
         result = cv2.matchTemplate(screen_resized, template, cv2.TM_CCOEFF_NORMED)
         min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
 
@@ -111,8 +114,8 @@ class ImageMatcher:
         y_coords, x_coords = np.where(result >= threshold)
         template_height, template_width = template.shape[:2]
         for x, y in zip(x_coords, y_coords):
-            center_x = int((x + template.shape[1] // 2) / self.scale_factor)
-            center_y = int((y + template.shape[0] // 2) / self.scale_factor)
+            center_x = int((x + template.shape[1] // 2) / self._scale_factor)
+            center_y = int((y + template.shape[0] // 2) / self._scale_factor)
             template_matches.append(
                 {
                     "template": self.add_image_template(template),
@@ -251,45 +254,7 @@ class ImageMatcher:
         max_val = np.max(similarity)
         return max_val < threshold
 
-    @staticmethod
-    def draw_match(image: np.ndarray, match: dict, color: Tuple[int, int, int] = (0, 255, 0), thickness: int = 2) -> np.ndarray:
-        """
-        在图像上绘制单个匹配的矩形框。
-        
-        :param image: 原始图像
-        :param match: 匹配的字典，包含 'position' 和 'dimensions' 键
-        :param color: 矩形框的颜色，默认为绿色 (B, G, R)
-        :param thickness: 边框厚度，默认为 2
-        :return: 绘制矩形框后的图像
-        """
-        x, y = match["position"]
-        width, height = match["dimensions"]
-        top_left = (int(x - width / 2), int(y - height / 2))
-        bottom_right = (int(x + width / 2), int(y + height / 2))
-        cv2.rectangle(image, top_left, bottom_right, color, thickness)
-        return image
 
-    @staticmethod
-    def draw_matches(
-        image: np.ndarray, 
-        matches: List[dict], 
-        color: Tuple[int, int, int] = (0, 255, 0),
-        thickness: int = 2,
-    ) -> np.ndarray:
-        """
-        批量绘制多个匹配到的图像区域矩形框，允许自定义颜色、边框宽度，并可选择保存图像。
-        
-        :param image: 原始图像
-        :param matches: 匹配到的区域字典列表，每个字典包含 'position' 和 'dimensions' 键
-        :param color: 绘制框的颜色 (B, G, R)，默认为绿色
-        :param thickness: 矩形框的边框宽度，默认为 2
-        :return: 绘制所有匹配位置矩形框后的图像
-        """
-        image_copy = image.copy()
-        for match in matches:
-            image_copy = ImageMatcher.draw_match(image_copy, match, color=color, thickness=thickness)
-        return image_copy
-    
     @staticmethod
     def filter_nearby_matches(matches: List[dict], min_distance: float = 10) -> List[dict]:
         """

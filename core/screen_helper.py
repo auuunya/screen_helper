@@ -118,22 +118,28 @@ class ScreenHelper:
         if not isinstance(options, dict):
             raise TypeError(f"Options for action '{action_type_text}' should be a dictionary, but got {type(options).__name__}")
         
-        try:
-            result = method(**options)
-            self._add_processed_action_result(
-                execute_id=execute_id,
-                result={
-                    "status": "success",
-                    "action": {"action_type_text": action_type_text, "options": options},
-                    "result": result
-                }
-            )
-            return True
-        except Exception as e:
-            error_message = str(e)
-            if self.debug:
-                raise RuntimeError(f"Error executing action '{action_type_text}': {error_message}")
-            return error_message
+        retry_count = options.pop('retry_count', 3)
+        attempts = 0
+        attempt_errors = []
+        while attempts <= retry_count:
+            try:
+                result = method(**options)
+                self._add_processed_action_result(
+                    execute_id=execute_id,
+                    result={
+                        "status": "success",
+                        "action": {"action_type_text": action_type_text, "options": options},
+                        "result": result
+                    }
+                )
+                return True
+            except Exception as e:
+                attempts += 1
+                attempt_errors.append(f"Attempt {attempts}/{retry_count} failed: {str(e)}")
+        error_message = f"Error executing action '{action_type_text}' options: {options}, retries: {attempt_errors}"
+        if self.debug:
+            raise RuntimeError(error_message)
+        return error_message
 
     def run_single_action(self, action: Dict[str, Any]) -> bool:
         """
@@ -147,38 +153,26 @@ class ScreenHelper:
         execute_id = options.get("execution_id", self.generate_execute_id())
         return self._execute_action(action_type_text, options, execute_id)
 
-    def run_action_queue(self, actions: List[Dict[str, Any]], max_retries: int = 3):
+    def run_action_queue(self, actions: List[Dict[str, Any]]):
         """
         执行操作队列中的所有操作。
 
         :param actions: 包含多个操作的字典列表
-        :param max_retries: 最大重试次数
         :return: 执行结果，包含最终状态和错误信息（如果有的话）
         """
         self.pending_actions = actions.copy()
-        retry_counts = {action['action_type_text']: 0 for action in actions}
-
         while self.pending_actions:
             action = self.pending_actions.pop(0)
             action_type_text = action.get("action_type_text")
             options = action.get("options", {})
             execute_id = options.get("execution_id", self.generate_execute_id())
-
-            success = False
-            for attempt in range(max_retries):
-                result = self._execute_action(action_type_text, options, execute_id)
-                if result is True:
-                    success = True
-                    retry_counts[action_type_text] = 0
-                    break
-                else:
-                    retry_counts[action_type_text] += 1
-                    action["error"] = result
-
-            if not success:
+            result = self._execute_action(action_type_text, options, execute_id)
+            if result is True:
+                continue
+            else:
+                action["error"] = result
                 self.pending_actions.insert(0, action)
                 break
-
         return {
             "processed_actions": self.processed_actions,
             "pending_actions": self.pending_actions

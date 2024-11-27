@@ -12,13 +12,13 @@ def test_image_matches():
     matcher = ImageMatcher(scale_factor=1.0, threshold=0.8)
     screen = ScreenCapture()
     s = screen.capture()
-    screen.record_screen_snapshot(s, f"{test_dir}/screen_shot.png")
+    utils.record_snapshot(s, f"{test_dir}/screen_shot.png")
     temp = matcher.load_image_file(f"{test_dir}/template2.png")
     try:
         matches = matcher.find_template_locations(s, temp)
         print("匹配位置:", matches)
         drawr = matcher.draw_matches(s, matches)
-        screen.record_screen_snapshot(drawr, f"{test_dir}/draw_template.png")
+        utils.record_snapshot(drawr, f"{test_dir}/draw_template.png")
     except RuntimeError as e:
         print (f"e: {e}")
 
@@ -26,7 +26,7 @@ def test_image_match():
     matcher = ImageMatcher(scale_factor=1.0, threshold=0.8)
     screen = ScreenCapture()
     s = screen.capture()
-    screen.record_screen_snapshot(s, f"{test_dir}/screen_shot.png")
+    utils.record_snapshot(s, f"{test_dir}/screen_shot.png")
     temp = matcher.load_image_file(f"{test_dir}/template2.png")
 
     c = [
@@ -46,7 +46,7 @@ def test_image_match():
             output_image_all = ImageMatcher.draw_match(s, matches)
             if "context_matches" in matches:
                 output_image_context = ImageMatcher.draw_matches(output_image_all, matches["context_matches"])
-            screen.record_screen_snapshot(output_image_context, f"{test_dir}/template_match_with_context.png")
+            utils.record_snapshot(output_image_context, f"{test_dir}/template_match_with_context.png")
         
     except RuntimeError as e:
         print (f"e: {e}")

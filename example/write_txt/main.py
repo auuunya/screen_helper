@@ -1,15 +1,10 @@
 #/usr/bin/env python
 # -------: encoding: utf-8 :------
 
-import platform
-import json
 import os
-import random
-import string
 import time
-import pytesseract
-
-
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from core import (
     BaseConfig,
     ScreenHelperDefs,
@@ -29,7 +24,7 @@ from core import (
 def screenshot_record_file(filename):
     screen_capture = ScreenCapture()
     arr = screen_capture.capture()
-    screen_capture.record_screen_snapshot(arr, filename)
+    screen_capture.record_snapshot(arr, filename)
     return arr
 
 def match_template_and_move(screen, template):

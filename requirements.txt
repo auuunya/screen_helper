@@ -4,4 +4,3 @@ pytesseract==0.3.13
 PyAutoGUI==0.9.54
 pyperclip==1.9.0
 mss==9.0.1
-pywin32

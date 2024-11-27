@@ -4,22 +4,15 @@ class BaseConfig:
     character = "\r\n" if system_name == "Windows" else "\n"
     spacing = "GBK" if system_name == "Windows" else "utf-8"
     scale_factor = 1 if system_name == "Windows" else 2
-    threshold = 0.8
     debug = False
+    threshold = 0.8
 
     @classmethod
-    def enable_debug(cls):
+    def state_debug(cls, enable: bool = False):
         """
         启用调试模式，将调试标志设置为 True。
         """
-        cls.debug = True
-
-    @classmethod
-    def disable_debug(cls):
-        """
-        禁用调试模式，将调试标志设置为 False。
-        """
-        cls.debug = False
+        cls.debug = enable
 
     @classmethod
     def set_scale_factor(cls, factor):
@@ -36,3 +29,4 @@ class BaseConfig:
         :param threshold: 匹配的阈值
         """
         cls.threshold = threshold
+

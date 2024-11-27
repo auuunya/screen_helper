@@ -1,6 +1,6 @@
-import pyautogui
 import pyperclip
 from typing import Optional, Literal
+import pyautogui
 
 class KeyboardController:
     @staticmethod
@@ -26,7 +26,7 @@ class KeyboardController:
         pyautogui.hotkey(*keys)
         
         if result_type == "clipboard":
-            pyautogui.sleep(0.1)  # 等待剪贴板更新
+            pyautogui.sleep(0.1)
             return ClipboardHandler.get_text()
         return None
 
