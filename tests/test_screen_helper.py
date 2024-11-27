@@ -17,6 +17,7 @@ from core.text_recognizer import TextRecognizer
 from core.config import BaseConfig
 from core.result import Result
 from core.screen_helper import ScreenHelper
+from core.utils import load_image_file
 
 class Execute:
     def __init__(self, scale_factor: float = None, threshold: float = None, debug: bool = False):
@@ -42,7 +43,6 @@ class Execute:
         self.text_recognizer = TextRecognizer()  # 文本识别器实例
         self.clipboard_contents: Dict[str, str] = {}  # 存储剪贴板内容的字典
         
-
         # 初始化
         self.current_coordinates = None
         self.screen_helper.add_action_method(
@@ -92,13 +92,13 @@ class Execute:
         target_image = params.get("target_image")
         target_context_image = params.get("target_context_image")
         preprocess_options = params.get("preprocess_options", {})
-        screen = self.screen_capture.load_image_file(src_image)
-        target_template = self.screen_capture.load_image_file(target_image)
+        screen = load_image_file(src_image)
+        target_template = load_image_file(target_image)
         if preprocess_options:
             screen = self.image_matcher.preprocess_input_image(screen, preprocess_options)
             target_template = self.image_matcher.preprocess_input_image(target_template, preprocess_options)
         if target_context_image:
-            _target_context = self.image_matcher.load_image_file(target_context_image)
+            _target_context = load_image_file(target_context_image)
             matches = self.image_matcher.find_template_with_contexts(
                 screen,
                 target_template,
@@ -202,7 +202,7 @@ class Execute:
         preprocess_options = params.get("preprocess_options", {})
         lang = params.get("lang", 'chi_sim+eng')  # 默认为中文和英语
         custom_config = params.get("custom_config")  # 自定义配置
-        screen = self.image_matcher.load_image_file(src_image)
+        screen = load_image_file(src_image)
         if preprocess_options:
             screen = self.image_matcher.preprocess_input_image(screen, preprocess_options)
         if context_text:

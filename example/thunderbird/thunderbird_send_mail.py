@@ -5,7 +5,7 @@ import os
 import time
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-from core import ScreenHelper, ScreenCapture, ImageMatcher, \
+from core import ScreenHelper, ScreenCapture, ImageMatcher, utils, \
     MouseController, OCRRecognizer, TextRecognizer, KeyboardController
 
 def send_mail():
@@ -20,7 +20,7 @@ def send_mail():
     
     # 2. 匹配 Thunderbird 图标位置并双击打开
     image_matcher = ImageMatcher()
-    thunder_template = image_matcher.load_image_file(f"{template_dir}/thunderbird.png")
+    thunder_template = utils.load_image_file(f"{template_dir}/thunderbird.png")
     locations = image_matcher.find_template_locations(screen_desktop_window, thunder_template)
     filter_location = image_matcher.filter_nearby_matches(locations, 10)
     draw_window = image_matcher.draw_matches(screen_desktop_window, filter_location)
@@ -37,7 +37,7 @@ def send_mail():
     utils.record_snapshot(screen_thunderbird_window, f"{template_dir}/thunderbird_window.png")
     
     # 4. 匹配 “写邮件” 按钮并单击
-    thunder_template = image_matcher.load_image_file(f"{template_dir}/write_mail.png")
+    thunder_template = utils.load_image_file(f"{template_dir}/write_mail.png")
     locations = image_matcher.find_template_locations(screen_thunderbird_window, thunder_template)
     filter_location = image_matcher.filter_nearby_matches(locations, 10)
     draw_window = image_matcher.draw_matches(screen_thunderbird_window, filter_location)
@@ -53,7 +53,7 @@ def send_mail():
     utils.record_snapshot(thunderbird_write_mail_window, f"{template_dir}/thunderbird_write_mail_window.png")
     
     # 6. 定位收件人输入框并输入邮箱地址
-    thunder_template = image_matcher.load_image_file(f"{template_dir}/shou.png")
+    thunder_template = utils.load_image_file(f"{template_dir}/shou.png")
     locations = image_matcher.find_template_locations(thunderbird_write_mail_window, thunder_template, 0.7)
     filter_location = image_matcher.filter_nearby_matches(locations, 10)
     draw_window = image_matcher.draw_matches(thunderbird_write_mail_window, filter_location)
@@ -66,7 +66,7 @@ def send_mail():
     KeyboardController.enter_text("test123@163.com")
     
     # 7. 定位主题输入框并输入主题内容
-    thunder_template = image_matcher.load_image_file(f"{template_dir}/zhuti.png")
+    thunder_template = utils.load_image_file(f"{template_dir}/zhuti.png")
     locations = image_matcher.find_template_locations(thunderbird_write_mail_window, thunder_template)
     filter_location = image_matcher.filter_nearby_matches(locations, 10)
     draw_window = image_matcher.draw_matches(thunderbird_write_mail_window, filter_location)
@@ -95,7 +95,7 @@ def send_mail():
     utils.record_snapshot(send_mail_screenshot, f"{template_dir}/send_mail_screen.png")
     
     # 11. 定位并点击发送按钮
-    thunder_template = image_matcher.load_image_file(f"{template_dir}/send.png")
+    thunder_template = utils.load_image_file(f"{template_dir}/send.png")
     locations = image_matcher.find_template_locations(send_mail_screenshot, thunder_template)
     filter_location = image_matcher.filter_nearby_matches(locations, 10)
     draw_window = image_matcher.draw_matches(send_mail_screenshot, filter_location)

@@ -44,16 +44,26 @@ def configure_xhost(enable: bool = True) -> None:
     except Exception as ex:
         raise RuntimeError(f"An error occurred while configuring xhost: {ex}")
 
-def record_snapshot(screenshot: np.ndarray, screenshot_file: Optional[str] = "record_snapshot.png"):
+def record_snapshot(image: np.ndarray, record_file: Optional[str] = "record_snapshot.png"):
     """
     保存当前快照到指定路径
-    :param screenshot: 要保存的屏幕快照 (numpy 数组格式)
-    :param file_path: 快照保存路径 (包含文件名及扩展名)，默认为 "screenshot.png"
+    :param image: 要保存的屏幕快照 (numpy 数组格式)
+    :param record_file: 快照保存路径 (包含文件名及扩展名)，默认为 "record_snapshot.png"
     """
     try:
-        cv2.imwrite(screenshot_file, screenshot)
+        cv2.imwrite(record_file, image)
     except cv2.error as e:
-        raise ValueError(f"截屏保存出错: {str(e)}")
+        raise ValueError(f"快照保存出错: {str(e)}")
+
+def load_image_file(template_path: str) -> np.ndarray:
+    """
+    加载模板并处理可能的异常。
+    """
+    try:
+        context_template_ndarray = cv2.imread(template_path)
+        return context_template_ndarray
+    except Exception:
+        raise ValueError(f"Could not read template: {template_path}")
 
 def draw_match(image: np.ndarray, 
                 match: dict, 

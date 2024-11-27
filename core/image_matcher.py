@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 from typing import List, Tuple, Dict, Any, Union
 import uuid
+from .utils import load_image_file
 
 class Template:
     def __init__(self, identifier: str, template_image: np.ndarray):
@@ -176,7 +177,7 @@ class ImageMatcher:
             template_path = context.get("template")
             offset = context.get("offset", {"x": 0, "y": 0})
             threshold = context.get("threshold", self.threshold)
-            context_template_ndarray = self.load_image_file(template_path)
+            context_template_ndarray = load_image_file(template_path)
             context_positions = self.find_template_locations(screen, context_template_ndarray, threshold)
             if context_positions:
                 for context_position in context_positions:
@@ -193,7 +194,7 @@ class ImageMatcher:
         #     offset = context.get("offset", {"x": 0, "y": 0})
         #     threshold = context.get("threshold", self.threshold)
 
-        #     context_template_ndarray = self.load_image_file(template_path)
+        #     context_template_ndarray = load_image_file(template_path)
         #     context_positions = self.find_template_locations(screen, context_template_ndarray, threshold)
         #     context_template_height, context_template_width = context_template_ndarray.shape[:2]
         #     if context_positions:
@@ -208,18 +209,6 @@ class ImageMatcher:
         #             context_matches.append(context_position)
         #             successful_matches.add(idx)
         # return context_matches
-
-    @staticmethod
-    def load_image_file(template_path: str) -> np.ndarray:
-        """
-        加载模板并处理可能的异常。
-        """
-        try:
-            context_template_ndarray = cv2.imread(template_path)
-            return context_template_ndarray
-        except Exception:
-            raise ValueError(f"Could not read template: {template_path}")
-
     @staticmethod
     def calculate_distance(pos1: Tuple[int, int], pos2: Tuple[int, int]) -> float:
         """

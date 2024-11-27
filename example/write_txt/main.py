@@ -18,7 +18,8 @@ from core import (
     ScreenCapture,
     TextRecognizer,
     WindowManager,
-    ScreenHelper
+    ScreenHelper,
+    utils
 )
 
 def screenshot_record_file(filename):
@@ -29,8 +30,8 @@ def screenshot_record_file(filename):
 
 def match_template_and_move(screen, template):
     image_matcher = ImageMatcher()
-    screen_arr = image_matcher.load_image_file(screen)
-    template_arr = image_matcher.load_image_file(template)
+    screen_arr = utils.load_image_file(screen)
+    template_arr = utils.load_image_file(template)
     matches = image_matcher.find_template_locations(screen_arr, template_arr)
     position = matches[0]["position"]
     MouseController.move_cursor(position[0], position[1])
@@ -40,7 +41,7 @@ def cursor_click(action="left"):
     MouseController.click_at(cur_pos[0], cur_pos[1], action)
 
 def find_text_pos(screen, target_text, contexts):
-    s_arr = ImageMatcher.load_image_file(screen)
+    s_arr = utils.load_image_file(screen)
     ocr_engine = OCRRecognizer(ocr_engine="tesseract", lang='eng', config=r'--oem 3 --psm 11 -c tessedit_char_whitelist=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ& ')
     result = ocr_engine.recognize_text(s_arr)
     textrecognizer = TextRecognizer()

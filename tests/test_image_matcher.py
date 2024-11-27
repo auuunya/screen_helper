@@ -3,6 +3,7 @@
 from core.defs import ScreenHelperDefs
 from core.screen_capture import ScreenCapture
 from core.image_matcher import ImageMatcher
+from core.utils import record_snapshot, load_image_file
 import os
 
 test_dir = os.path.join(os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir)), "image")
@@ -12,13 +13,13 @@ def test_image_matches():
     matcher = ImageMatcher(scale_factor=1.0, threshold=0.8)
     screen = ScreenCapture()
     s = screen.capture()
-    utils.record_snapshot(s, f"{test_dir}/screen_shot.png")
-    temp = matcher.load_image_file(f"{test_dir}/template2.png")
+    record_snapshot(s, f"{test_dir}/screen_shot.png")
+    temp = load_image_file(f"{test_dir}/template2.png")
     try:
         matches = matcher.find_template_locations(s, temp)
         print("匹配位置:", matches)
         drawr = matcher.draw_matches(s, matches)
-        utils.record_snapshot(drawr, f"{test_dir}/draw_template.png")
+        record_snapshot(drawr, f"{test_dir}/draw_template.png")
     except RuntimeError as e:
         print (f"e: {e}")
 
@@ -26,8 +27,8 @@ def test_image_match():
     matcher = ImageMatcher(scale_factor=1.0, threshold=0.8)
     screen = ScreenCapture()
     s = screen.capture()
-    utils.record_snapshot(s, f"{test_dir}/screen_shot.png")
-    temp = matcher.load_image_file(f"{test_dir}/template2.png")
+    record_snapshot(s, f"{test_dir}/screen_shot.png")
+    temp = load_image_file(f"{test_dir}/template2.png")
 
     c = [
         {
@@ -46,7 +47,7 @@ def test_image_match():
             output_image_all = ImageMatcher.draw_match(s, matches)
             if "context_matches" in matches:
                 output_image_context = ImageMatcher.draw_matches(output_image_all, matches["context_matches"])
-            utils.record_snapshot(output_image_context, f"{test_dir}/template_match_with_context.png")
+            record_snapshot(output_image_context, f"{test_dir}/template_match_with_context.png")
         
     except RuntimeError as e:
         print (f"e: {e}")

@@ -6,10 +6,11 @@ ScreenHelper is an automation tool based on image recognition, designed to provi
 
 > **Note**: This project is still in development and may contain unstable features and unimplemented characteristics. Please stay tuned for updates. Due to the current development phase and lack of extensive testing, this project should not be used in production environments.
 
-### Current Version: v0.1.1
+### Current Version: v0.1.2
 
 - Initial release
-- The project is still under development; feedback and suggestions are welcome.
+- The project is still under development; feedback and suggestions are welcome
+- Modify the code structure to add the windows window manager class
 
 ## Features
 

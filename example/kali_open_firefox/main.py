@@ -18,7 +18,7 @@ def open_firefox():
     
     # 2. 匹配 Firefox 图标位置并双击打开
     image_matcher = ImageMatcher(BaseConfig.scale_factor, BaseConfig.threshold)
-    thunder_template = image_matcher.load_image_file(f"firefox_icon.png")
+    thunder_template = utils.load_image_file(f"firefox_icon.png")
     processed_template = image_matcher.preprocess_input_image(
         thunder_template, 
             {
