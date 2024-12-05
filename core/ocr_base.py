@@ -4,36 +4,50 @@ import pytesseract
 from pytesseract import Output
 
 class BaseOCR:
+    """
+    Abstract base class for Optical Character Recognition (OCR) implementations. 
+    Provides methods for recognizing text and formatting the results.
+    """
+
     def recognize_text(self, image: np.ndarray) -> Union[Dict[str, Any], str]:
-        """识别图像中的文本内容。
+        """
+        Recognize text content in an image.
         
-        :param image: 需要识别的图像，格式为 NumPy 数组
-        :return: 识别结果，可以是字典或者字符串，具体取决于实现
+        :param image: The image to be processed, in NumPy array format.
+        :return: Recognition result, which can be a dictionary or a string, depending on the implementation.
         """
         raise NotImplementedError("This method should be overridden by subclasses.")
 
     def format_result(self, raw_result: Any) -> Dict[str, Any]:
-        """格式化识别结果为字典格式。
+        """
+        Format the raw OCR result into a dictionary format.
         
-        :param raw_result: OCR 引擎返回的原始结果
-        :return: 格式化后的结果，字典格式
+        :param raw_result: The raw result returned by the OCR engine.
+        :return: A formatted result as a dictionary.
         """
         raise NotImplementedError("This method should be overridden by subclasses.")
 
 
 class TesseractOCR(BaseOCR):
+    """
+    Tesseract OCR implementation of the BaseOCR class. 
+    Allows text recognition using Tesseract with configurable options.
+    """
+
     def __init__(self, **kwargs: Any) -> None:
-        """TesseractOCR 初始化，接受参数用于配置 Tesseract OCR。
+        """
+        Initialize the TesseractOCR with optional configuration parameters.
         
-        :param kwargs: Tesseract OCR 的配置参数，例如 `lang`, `config` 等
+        :param kwargs: Configuration parameters for Tesseract OCR, such as `lang`, `config`, etc.
         """
         self.kwargs = kwargs
 
     def recognize_text(self, image: np.ndarray) -> Dict[str, Any]:
-        """使用 Tesseract 识别图像中的文本。
+        """
+        Use Tesseract to recognize text from the given image.
         
-        :param image: 要识别的图像，NumPy 数组格式
-        :return: 格式化后的 OCR 识别结果，字典格式
+        :param image: The image to be processed, in NumPy array format.
+        :return: The formatted OCR recognition result as a dictionary.
         """
         if 'output_type' not in self.kwargs:
             self.kwargs['output_type'] = Output.DICT
@@ -41,10 +55,11 @@ class TesseractOCR(BaseOCR):
         return self.format_result(raw_result)
 
     def format_result(self, raw_result: Any) -> Dict[str, Any]:
-        """格式化 Tesseract 返回的原始结果为字典格式。
+        """
+        Format the raw result returned by Tesseract into a dictionary format.
         
-        :param raw_result: OCR 引擎返回的原始结果
-        :return: 格式化后的结果，字典格式
+        :param raw_result: The raw result returned by the OCR engine.
+        :return: A formatted result as a dictionary.
         """
         return {
             **raw_result,
@@ -52,19 +67,24 @@ class TesseractOCR(BaseOCR):
 
 
 class OCRFactory:
+    """
+    A factory class for creating OCR engine instances.
+    Supports multiple OCR engines with extensibility for additional engines.
+    """
     _ocr_engines = {
         "tesseract": TesseractOCR,
-        # add other OCR engine
+        # Additional OCR engines can be added here.
     }
 
     @staticmethod
     def create_ocr_engine(ocr_engine: str = 'tesseract', **kwargs: Any) -> BaseOCR:
-        """创建 OCR 引擎实例。
+        """
+        Create an instance of the specified OCR engine.
         
-        :param ocr_engine: OCR 引擎名称，默认为 'tesseract'
-        :param kwargs: OCR 引擎的额外参数
-        :return: OCR 引擎的实例
-        :raises ValueError: 如果指定的 OCR 引擎不受支持
+        :param ocr_engine: The name of the OCR engine, defaults to 'tesseract'.
+        :param kwargs: Additional parameters for the OCR engine.
+        :return: An instance of the specified OCR engine.
+        :raises ValueError: If the specified OCR engine is not supported.
         """
         if ocr_engine not in OCRFactory._ocr_engines:
             raise ValueError(f"Unsupported OCR engine: {ocr_engine}")
@@ -72,18 +92,24 @@ class OCRFactory:
 
 
 class OCRRecognizer:
+    """
+    A high-level recognizer class for handling OCR tasks using a specified OCR engine.
+    """
+
     def __init__(self, ocr_engine: str = 'tesseract', **kwargs: Any) -> None:
-        """OCR 识别器的初始化方法。
+        """
+        Initialize the OCR recognizer with the specified OCR engine.
         
-        :param ocr_engine: OCR 引擎名称，默认为 'tesseract'
-        :param kwargs: OCR 引擎的额外参数
+        :param ocr_engine: The name of the OCR engine, defaults to 'tesseract'.
+        :param kwargs: Additional parameters for the OCR engine.
         """
         self.ocr = OCRFactory.create_ocr_engine(ocr_engine, **kwargs)
 
     def recognize_text(self, image: np.ndarray) -> Dict[str, Any]:
-        """使用 OCR 引擎识别图像中的文本。
+        """
+        Recognize text from the given image using the configured OCR engine.
         
-        :param image: 要识别的图像，NumPy 数组格式
-        :return: OCR 识别结果，字典格式
+        :param image: The image to be processed, in NumPy array format.
+        :return: The OCR recognition result as a dictionary.
         """
         return self.ocr.recognize_text(image)

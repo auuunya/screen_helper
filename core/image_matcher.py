@@ -1,15 +1,16 @@
 import cv2
 import numpy as np
-from typing import List, Tuple, Dict, Any, Union
+from typing import List, Tuple, Dict, Any, Union, Optional
 import uuid
 from .utils import load_image_file
 
 class Template:
     def __init__(self, identifier: str, template_image: np.ndarray):
         """
-        初始化模板对象
-        :param identifier: 模板的唯一标识符
-        :param template_image: 模板图像的 NumPy 数组
+        Initialize the Template object.
+        
+        :param identifier: Unique identifier for the template.
+        :param template_image: Template image as a NumPy array.
         """
         self.identifier = identifier
         self.template_image = template_image
@@ -18,9 +19,10 @@ class ImageMatcher:
 
     def __init__(self, scale_factor: float = None, threshold: float = None):
         """
-        初始化图像匹配器
-        :param scale_factor: 图像缩放因子，用于调整待匹配图像的大小
-        :param threshold: 匹配的阈值，控制匹配的灵敏度
+        Initialize the ImageMatcher object.
+        
+        :param scale_factor: Scale factor for resizing the image during matching.
+        :param threshold: Matching threshold to control the sensitivity of the match.
         """
         self._scale_factor = scale_factor
         self._threshold = threshold
@@ -28,9 +30,10 @@ class ImageMatcher:
 
     def update_config(self, scale_factor: float = None, threshold: float = None):
         """
-        更新匹配器的配置
-        :param scale_factor: 新的缩放因子
-        :param threshold: 新的匹配阈值
+        Update the configuration of the image matcher.
+        
+        :param scale_factor: New scale factor for resizing images during matching.
+        :param threshold: New matching threshold.
         """
         if scale_factor is not None:
             self._scale_factor = scale_factor
@@ -39,9 +42,10 @@ class ImageMatcher:
 
     def add_image_template(self, template_image: np.ndarray) -> str:
         """
-        添加模板到匹配器
-        :param template_image: 模板图像的 NumPy 数组
-        :return: 模板的唯一标识符
+        Add a template image to the matcher.
+        
+        :param template_image: Template image as a NumPy array.
+        :return: Unique identifier for the template.
         """
         template_id = f"templates_{uuid.uuid4()}"
         self.templates[template_id] = Template(template_id, template_image)
@@ -49,9 +53,10 @@ class ImageMatcher:
 
     def retrieve_template(self, identifier: str) -> np.ndarray:
         """
-        根据标识符获取模板图像
-        :param identifier: 模板的唯一标识符
-        :return: 对应的模板图像 NumPy 数组，如果未找到则返回 None
+        Retrieve a template image by its unique identifier.
+        
+        :param identifier: Unique identifier of the template.
+        :return: Corresponding template image as a NumPy array, or None if not found.
         """
         template = self.templates.get(identifier)
         return template.template_image if template else None
@@ -59,36 +64,34 @@ class ImageMatcher:
     @staticmethod
     def preprocess_input_image(image: np.ndarray, options: Dict[str, Any] = None) -> np.ndarray:
         """
-        动态预处理图像，根据提供的选项调整预处理流程（灰度、模糊、直方图均衡、二值化）
+        Preprocess the input image dynamically based on provided options (grayscale, blur, histogram equalization, binarization).
         
-        :param image: 输入的图像（numpy 数组格式）
-        :param options: 预处理选项，可以控制是否进行灰度转换、模糊处理、直方图均衡、二值化等
-        :return: 预处理后的图像
+        :param image: Input image as a NumPy array.
+        :param options: Preprocessing options which control grayscale conversion, blurring, histogram equalization, and binarization.
+        :return: Preprocessed image.
         """
         if options is None:
             options = {}
 
         processed_image = image.copy()
         
-        # 灰度转换
+        # Convert to grayscale if specified
         if options.get('gray', False):
             processed_image = cv2.cvtColor(processed_image, cv2.COLOR_BGR2GRAY)
 
-        # 模糊处理
+        # Apply Gaussian blur if specified
         if options.get('blur', False):
-            blur_kernel_size = options.get('blur_kernel', (5, 5))  # 可以动态调整模糊核大小
+            blur_kernel_size = options.get('blur_kernel', (5, 5))
             processed_image = cv2.GaussianBlur(processed_image, blur_kernel_size, 0)
 
-        # 直方图均衡（仅在灰度图像上执行）
+        # Apply histogram equalization if specified (only on grayscale images)
         if options.get('equalize', False) and len(processed_image.shape) == 2:
             processed_image = cv2.equalizeHist(processed_image)
         
-        # 二值化处理
+        # Apply binary thresholding if specified
         if options.get("threshold", False):
-            # 如果图像未灰度化，则先灰度化
-            if len(processed_image.shape) == 3:  # 如果是彩色图像
+            if len(processed_image.shape) == 3:
                 processed_image = cv2.cvtColor(processed_image, cv2.COLOR_BGR2GRAY)
-            # 动态阈值设定
             threshold_value = options.get("threshold_value", 150)
             max_value = options.get("max_value", 255)
             _, processed_image = cv2.threshold(processed_image, threshold_value, max_value, cv2.THRESH_BINARY)
@@ -96,11 +99,11 @@ class ImageMatcher:
 
     def find_template_locations(self, screen: np.ndarray, template: np.ndarray, threshold: float = None) -> List[Tuple[int, int]]:
         """
-        在屏幕图像中查找模板图像，返回所有匹配的位置。
+        Find all locations of the template in the screen image.
         
-        :param screen: 当前屏幕的图像（numpy 数组格式）。
-        :param template: 模板图像的 numpy 数组。
-        :return: 所有找到的模板中心坐标 (x, y) 列表。
+        :param screen: Current screen image as a NumPy array.
+        :param template: Template image as a NumPy array.
+        :return: A list of positions (x, y) where the template was found.
         """
         if not threshold:
             threshold = self._threshold
@@ -109,7 +112,7 @@ class ImageMatcher:
         min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
 
         if max_val < threshold:
-            raise RuntimeError(f"匹配失败，当前阈值 {max_val} 未达到定义阈值 {threshold}")
+            raise RuntimeError(f"Match failed, current threshold {max_val} did not reach defined threshold {threshold}")
 
         template_matches = []
         y_coords, x_coords = np.where(result >= threshold)
@@ -130,16 +133,13 @@ class ImageMatcher:
     def find_template_with_contexts(self, screen: np.ndarray, template: np.ndarray, contexts: List[dict], 
                              all_matching: bool = False) -> Union[dict, None]:
         """
-        根据上下文条件查找图像中的所有匹配位置。
+        Find all matching positions of the template in the screen image based on context conditions.
 
-        参数:
-            screen (np.ndarray): 要搜索的屏幕图像。
-            template (np.ndarray): 要匹配的目标图像模板。
-            contexts (List[dict]): 包含上下文模板及其相关信息的字典列表。
-            all_matching (bool): 如果为 True，则要求所有上下文匹配。
-
-        返回:
-            Union[dict, None]: 如果找到匹配，则返回包含匹配信息的字典；否则返回 None。
+        :param screen: Current screen image as a NumPy array.
+        :param template: Template image as a NumPy array.
+        :param contexts: List of dictionaries containing context templates and related information.
+        :param all_matching: If True, all contexts must match for a successful result.
+        :return: A dictionary containing match information if a match is found, or None if no match is found.
         """
         template_matches = self.find_template_locations(screen, template)
         if not template_matches:
@@ -160,16 +160,12 @@ class ImageMatcher:
 
     def filter_context_matches(self, screen: np.ndarray, match: dict, contexts: List[dict]) -> Union[dict, None]:
         """
-        根据上下文图像过滤匹配，并返回详细的匹配信息。
+        Filter the context matches based on the provided contexts and return the detailed match information.
 
-        参数:
-            screen (np.ndarray): 要搜索的屏幕图像。
-            match (Tuple[int, int]): 目标图像的匹配位置坐标 (x, y)。
-            contexts (List[dict]): 包含上下文模板及其相关信息的字典列表。
-            all_matching (bool): 如果为 True，则要求所有上下文匹配。
-
-        返回:
-            Union[dict, None]: 如果找到符合上下文条件的匹配，则返回包含匹配信息的字典；否则返回 None。
+        :param screen: Current screen image as a NumPy array.
+        :param match: Dictionary containing the matched template position (x, y).
+        :param contexts: List of dictionaries containing context templates and related information.
+        :return: A list of context match information, or None if no matches are found.
         """
         context_matches = []
         successful_matches = set()
@@ -212,7 +208,11 @@ class ImageMatcher:
     @staticmethod
     def calculate_distance(pos1: Tuple[int, int], pos2: Tuple[int, int]) -> float:
         """
-        计算两个位置之间的欧几里得距离。
+        Calculate the Euclidean distance between two positions.
+        
+        :param pos1: First position as a tuple (x, y).
+        :param pos2: Second position as a tuple (x, y).
+        :return: Euclidean distance between the two positions.
         """
         return ((pos1[0] - pos2[0]) ** 2 + (pos1[1] - pos2[1]) ** 2) ** 0.5
 
@@ -225,12 +225,13 @@ class ImageMatcher:
         threshold: float = 0.9
     ) -> bool:
         """
-        判断两张图片是否重合，通过相似度阈值判断
-        :param screenshot_before: 第一张截图
-        :param screenshot_after: 第二张截图
-        :param options: 处理图片时的选项，包含处理流程的配置
-        :param threshold: 相似度阈值，默认为0.9
-        :return: 如果两张图片不同返回 True，否则返回 False
+        Compare two images for similarity using a threshold.
+
+        :param screenshot_before: The first screenshot.
+        :param screenshot_after: The second screenshot.
+        :param options: Options for preprocessing images, such as gray scaling, thresholding, etc.
+        :param threshold: Similarity threshold, default is 0.9.
+        :return: Returns True if the images are different, False if they are similar.
         """
         if options is None:
             options = {}
@@ -243,15 +244,14 @@ class ImageMatcher:
         max_val = np.max(similarity)
         return max_val < threshold
 
-
     @staticmethod
     def filter_nearby_matches(matches: List[dict], min_distance: float = 10) -> List[dict]:
         """
-        过滤掉相邻的重复匹配点，仅保留每组相邻点中的一个。
+        Filter out adjacent duplicate match points, keeping only one from each group of adjacent points.
         
-        :param matches: 初始的匹配点列表，每个匹配点包含'position'字段。
-        :param min_distance: 两个匹配点之间的最小距离。低于该距离的匹配点会被视为重复。
-        :return: 过滤后的匹配点列表。
+        :param matches: The initial list of match points, each containing a 'position' field.
+        :param min_distance: The minimum distance between two match points. Points closer than this distance will be considered duplicates.
+        :return: The filtered list of match points.
         """
         filtered_matches = []
         for match in matches:
@@ -264,3 +264,153 @@ class ImageMatcher:
             if not too_close:
                 filtered_matches.append(match)
         return filtered_matches
+    
+    def find_template_locations_complex(
+            self,
+            screen: np.ndarray,
+            template: np.ndarray,
+            color_space: str = 'HSV',  # 'HSV' or 'BGR'
+            lower_color: Optional[np.ndarray] = None,  # Lower bound of color range
+            upper_color: Optional[np.ndarray] = None,  # Upper bound of color range
+            threshold: float = 0.8,  # Matching threshold
+            min_area: Optional[float] = None,  # Minimum contour area
+            max_area: Optional[float] = None,  # Maximum contour area
+            min_aspect_ratio: Optional[float] = None,  # Minimum aspect ratio
+            max_aspect_ratio: Optional[float] = None,  # Maximum aspect ratio
+            scale_factor: Optional[float] = None  # Screen scaling factor
+        ) -> Union[List[Dict], None]:
+        """
+        Find template image locations in the screen image, returning all matched positions.
+        Supports color range filtering, contour filtering, and other parameters.
+        
+        :param screen: The current screen image (in NumPy array format).
+        :param template: The template image as a NumPy array.
+        :param color_space: Color space to use, either 'HSV' or 'BGR'.
+        :param lower_color: Lower bound of the color range (NumPy array) for color filtering.
+        :param upper_color: Upper bound of the color range (NumPy array) for color filtering.
+        :param threshold: Template matching threshold, default is 0.8.
+        :param min_area: Minimum contour area to filter small contours.
+        :param max_area: Maximum contour area to filter large contours. Default is None (no limit).
+        :param min_aspect_ratio: Minimum aspect ratio for the matched region.
+        :param max_aspect_ratio: Maximum aspect ratio for the matched region.
+        :param scale_factor: Screen scaling factor, used to resize the image for different resolutions. Default is 1.0.
+        :return: A list of matched template information, or None if no matches are found.
+        """
+        # 1. Apply color filter if color bounds are provided
+        color_mask = None
+        if lower_color is not None and upper_color is not None:
+            if color_space == 'HSV':
+                hsv_screen = cv2.cvtColor(screen, cv2.COLOR_BGR2HSV)
+            elif color_space == 'BGR':
+                hsv_screen = screen  # No conversion for BGR
+            else:
+                raise ValueError("Unsupported color space. Choose either 'HSV' or 'BGR'.")
+            # Create color mask
+            color_mask = cv2.inRange(hsv_screen, lower_color, upper_color)
+        
+        # 2. Resize and convert to grayscale
+        scale_factor = scale_factor or self.scale_factor
+        screen_resized = cv2.resize(screen, None, fx=scale_factor, fy=scale_factor, interpolation=cv2.INTER_LINEAR)
+        screen_gray = cv2.cvtColor(screen_resized, cv2.COLOR_BGR2GRAY)
+        template_gray = cv2.cvtColor(template, cv2.COLOR_BGR2GRAY)
+        
+        # Use edge detection to find all possible match regions
+        edges_screen = cv2.Canny(screen_gray, 100, 200)
+        edges_template = cv2.Canny(template_gray, 100, 200)
+        
+        # 3. Perform template matching
+        result = cv2.matchTemplate(edges_screen, edges_template, cv2.TM_CCOEFF_NORMED)
+        y_coords, x_coords = np.where(result >= threshold)
+        template_matches = []
+        template_height, template_width = template.shape[:2]
+        
+        for x, y in zip(x_coords, y_coords):
+            center_x = int((x + template_width // 2) / scale_factor)
+            center_y = int((y + template_height // 2) / scale_factor)
+            
+            # If color mask is provided, ensure the center point is within the color range
+            if color_mask is not None:
+                if color_mask[y + template_height // 2, x + template_width // 2] == 0:
+                    continue  # Skip if center is outside the specified color range
+            
+            # Extract region of interest (ROI)
+            roi = screen[center_y - template_height // 2:center_y + template_height // 2, 
+                        center_x - template_width // 2:center_x + template_width // 2]
+            
+            # Filter by area and aspect ratio if provided
+            area = template_width * template_height
+            aspect_ratio = float(template_width) / template_height
+            if (min_area and area < min_area) or (max_area and area > max_area):
+                continue
+            if (min_aspect_ratio and aspect_ratio < min_aspect_ratio) or (max_aspect_ratio and aspect_ratio > max_aspect_ratio):
+                continue
+            
+            template_matches.append({
+                "position": (center_x, center_y),
+                "dimensions": (template_width, template_height),
+                "score": result[y, x],
+                "roi": roi,
+                "threshold": threshold
+            })
+        return template_matches
+   
+    def find_template_with_features(
+            self,
+            screen: np.ndarray, 
+            template: np.ndarray, 
+            feature_type: str = 'ORB',  # 'ORB', 'SIFT', or 'SURF'
+            threshold: float = 0.8,  # Minimum score threshold for matching
+            max_matches: Optional[int] = 50  # Optional, maximum number of matches, default is 50
+        ) -> Union[List[Dict], None]:
+        """
+        Use feature matching (ORB, SIFT, SURF) to find template image locations in the screen.
+        
+        :param screen: The current screen image (in NumPy array format).
+        :param template: The template image as a NumPy array.
+        :param feature_type: Feature matching method, 'ORB', 'SIFT', or 'SURF'.
+        :param threshold: Minimum matching score threshold.
+        :param max_matches: Optional, the maximum number of matches to return, default is 50.
+        :return: A list of matched results, including the center coordinates of each match.
+        """
+        # Choose feature detector
+        if feature_type == 'ORB':
+            feature_detector = cv2.ORB_create()
+        elif feature_type == 'SIFT':
+            feature_detector = cv2.SIFT_create()
+        elif feature_type == 'SURF':
+            feature_detector = cv2.xfeatures2d.SURF_create()  # Requires opencv-contrib
+        else:
+            raise ValueError("Unsupported feature type. Choose from 'ORB', 'SIFT', or 'SURF'.")
+        
+        # 1. Detect and compute keypoints and descriptors
+        kp_screen, des_screen = feature_detector.detectAndCompute(screen, None)
+        kp_template, des_template = feature_detector.detectAndCompute(template, None)
+        if des_screen is None or des_template is None:
+            raise ValueError("Feature detection failed or descriptors could not be computed.")
+        
+        # 2. Match descriptors using BruteForce matcher
+        bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
+        matches = bf.match(des_screen, des_template)
+        
+        # 3. Sort matches by distance
+        matches = sorted(matches, key=lambda x: x.distance)
+        
+        # 4. Select good matches based on threshold
+        good_matches = [match for match in matches if match.distance < threshold * max([m.distance for m in matches])]
+        
+        # 5. Get center coordinates of all matched regions
+        template_matches = []
+        for match in good_matches[:max_matches]:
+            screen_point = kp_screen[match.queryIdx].pt
+            center_x = int(screen_point[0])
+            center_y = int(screen_point[1])
+            template_height, template_width = template.shape[:2]
+            template_matches.append({
+                "position": (center_x, center_y),
+                "dimensions": (template_width, template_height),
+                "score": match.distance,  # Matching score
+                "threshold": threshold
+            })
+        
+        return template_matches
+   

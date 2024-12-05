@@ -1,73 +1,98 @@
-import uuid
 from typing import List, Dict, Any, Callable
+import uuid
 
 class ScreenHelper:
-    # 定义为类属性
+    """
+    This class provides methods for automating screen operations, including adding action methods,
+    generating execution IDs, and managing the results of actions.
+
+    Attributes:
+        action_method_mapping (Dict[str, Callable[..., Any]]): A dictionary that maps action types to their corresponding methods.
+        debug (bool): A flag to enable or disable debug mode.
+
+    Methods:
+        add_action_method: Adds a new action method to the action method mapping.
+        generate_execute_id: Generates a unique execution ID.
+        _add_processed_action_result: Adds or updates the result of an executed action.
+        _add_value_to_processed_action: Adds a value to a specific key in the processed action results.
+        get_execute_result: Retrieves the result of a specific action, optionally by key.
+        _execute_action: Executes an action based on its type and options, and records the result.
+        run_single_action: Runs a single action from a dictionary containing the action type and parameters.
+        run_action_queue: Runs a queue of actions, processing each one sequentially.
+    """
+
+    # Class attributes
     action_method_mapping: Dict[str, Callable[..., Any]] = {}
     debug: bool = False
-     
+
     def __init__(self):
         """
-        初始化自动化类，用于处理屏幕自动化操作。
-        :param scale_factor: 图像缩放因子，控制待匹配图像的大小
-        :param threshold: 匹配的阈值，决定图像匹配的灵敏度
-        :param debug: 是否启用调试模式，启用时将显示详细的日志信息
+        Initializes the ScreenHelper class for automating screen operations.
         """
         self.processed_actions: Dict[str, Dict[str, Any]] = {}
         self.pending_actions: List[Dict[str, Any]] = []
-    
-    @classmethod
-    def add_action_method(cls, action_type, method=None):
-        """
-        动态添加新操作类型及其对应的方法。支持单个添加和批量添加。
 
-        :param action_type: 操作类型的字符串，或 {操作类型: 方法} 的字典
-        :param method: 需要添加的单个方法，应该接受预期的参数并返回有效结果
-        :raises ValueError: 如果 action_type 已经存在于映射表中，抛出异常
-        :raises TypeError: 如果传入的方法不符合预期接口，抛出异常
+    @classmethod
+    def add_action_method(cls, action_type: str, method: Callable[..., Any] = None):
         """
-        # 如果传入的是字典类型，则批量添加
+        Dynamically adds a new action type and its corresponding method to the action mapping.
+        Supports both single and batch additions.
+
+        :param action_type: The action type as a string, or a dictionary of {action_type: method}.
+        :param method: The method to associate with the action type. Should accept expected parameters and return valid results.
+        :raises ValueError: If the action_type already exists in the mapping.
+        :raises TypeError: If the provided method is not callable.
+        """
+        # If a dictionary is passed, add methods in bulk
         if isinstance(action_type, dict):
             for act_type, meth in action_type.items():
                 cls._add_single_action_method(act_type, meth)
-        # 如果传入的是单个方法
+        # If a single method is passed, add it
         else:
             cls._add_single_action_method(action_type, method)
 
     @classmethod
-    def _add_single_action_method(cls, action_type, method):
+    def _add_single_action_method(cls, action_type: str, method: Callable[..., Any]):
+        """
+        Adds a single action type and its method to the action method mapping.
+
+        :param action_type: The action type to add.
+        :param method: The method corresponding to the action type.
+        :raises TypeError: If the method is not callable.
+        :raises ValueError: If the action_type already exists in the mapping.
+        """
         if not callable(method):
             raise TypeError(f"The method for action type '{action_type}' must be callable.")
         if action_type in cls.action_method_mapping:
             raise ValueError(f"Action type '{action_type}' is already in the action method mapping.")
         cls.action_method_mapping[action_type] = method
 
-
-    def generate_execute_id(self):
+    def generate_execute_id(self) -> str:
         """
-        生成一个唯一的执行标识符。
+        Generates a unique execution identifier (UUID).
 
-        :return: 返回一个随机生成的 UUID 字符串。
+        :return: A string representing the generated UUID.
         """
         return str(uuid.uuid4())
 
     def _add_processed_action_result(self, execute_id: str, result: Dict[str, Any]):
         """
-        向 `processed_actions` 添加或更新执行结果。
+        Adds or updates the execution result for a given execution ID.
 
-        :param execute_id: 执行标识符
-        :param result: 需要添加的执行结果，格式为字典
+        :param execute_id: The unique identifier for the execution.
+        :param result: A dictionary containing the result of the execution.
         """
         self.processed_actions.setdefault(execute_id, {}).update(result)
-        
+
     def _add_value_to_processed_action(self, execute_id: str, key: str, value: Any):
         """
-        向 `processed_actions` 中的指定键添加值。如果该键已存在并且是字典，将进行更新。
+        Adds a value to a specific key in the processed actions dictionary. 
+        If the key is already a dictionary, the value is merged.
 
-        :param execute_id: 执行标识符
-        :param key: 要更新的键
-        :param value: 要添加的值
-        :raises KeyError: 如果 `execute_id` 不存在，抛出异常
+        :param execute_id: The execution ID to update.
+        :param key: The key to update in the processed actions dictionary.
+        :param value: The value to add to the specified key.
+        :raises KeyError: If the execution ID does not exist.
         """
         if execute_id in self.processed_actions:
             entry = self.processed_actions[execute_id]
@@ -79,16 +104,16 @@ class ScreenHelper:
             else:
                 entry[key] = value
         else:
-            raise KeyError(f"execute '{execute_id}' not found in processed actions")
+            raise KeyError(f"Execution ID '{execute_id}' not found in processed actions.")
         
-    def get_execute_result(self, execute_id: str, key: str = None):
+    def get_execute_result(self, execute_id: str, key: str = None) -> Any:
         """
-        获取执行结果。如果指定了 key，则返回相应的嵌套值。
+        Retrieves the execution result for a specific execution ID, optionally by a specific key.
 
-        :param execute_id: 执行标识符
-        :param key: 可选参数，指定要获取的结果键，支持嵌套访问，用 `.` 分隔
-        :return: 返回指定键的值，或者整个执行结果条目
-        :raises KeyError: 如果 `execute_id` 或者指定的键不存在，抛出异常
+        :param execute_id: The unique identifier for the execution.
+        :param key: An optional key to retrieve a nested value (supports dot notation).
+        :return: The value associated with the specified key or the entire execution result.
+        :raises KeyError: If the execution ID or key does not exist.
         """
         if execute_id in self.processed_actions:
             entry = self.processed_actions[execute_id]
@@ -99,18 +124,21 @@ class ScreenHelper:
                     if isinstance(value, dict) and k in value:
                         value = value[k]
                     else:
-                        raise KeyError(f"execute '{execute_id}' not find '{key}'")
+                        raise KeyError(f"Execution ID '{execute_id}' not found for key '{key}'.")
                 return value
             return entry
-        raise KeyError(f"execute '{execute_id}' not found in processed actions")
-        
+        raise KeyError(f"Execution ID '{execute_id}' not found in processed actions.")
+
     def _execute_action(self, action_type_text: str, options: Dict[str, Any], execute_id: str) -> bool:
         """
-        执行指定的操作并记录结果。
+        Executes a specified action and records the result.
 
-        :param action_type_text: 操作的类型
-        :param options: 传递给操作的方法参数
-        :param execute_id: 当前操作的执行标识符
+        :param action_type_text: The type of action to execute.
+        :param options: A dictionary of options to pass to the action method.
+        :param execute_id: The unique identifier for this execution.
+        :return: True if the action was successful, or an error message if it failed.
+        :raises ValueError: If the action type is not found.
+        :raises TypeError: If the options are not provided as a dictionary.
         """
         method = self.action_method_mapping.get(action_type_text)
         if not method:
@@ -143,22 +171,22 @@ class ScreenHelper:
 
     def run_single_action(self, action: Dict[str, Any]) -> bool:
         """
-        执行单个操作。
+        Executes a single action, typically from a dictionary containing action type and parameters.
 
-        :param action: 包含操作类型和参数的字典
-        :return: 执行结果，包含状态和执行标识符
+        :param action: A dictionary containing the action type and its options.
+        :return: The result of the action execution, either success or error message.
         """
         action_type_text = action.get("action_type_text")
         options = action.get("options", {})
         execute_id = options.get("execution_id", self.generate_execute_id())
         return self._execute_action(action_type_text, options, execute_id)
 
-    def run_action_queue(self, actions: List[Dict[str, Any]]):
+    def run_action_queue(self, actions: List[Dict[str, Any]]) -> Dict[str, Any]:
         """
-        执行操作队列中的所有操作。
+        Executes a queue of actions sequentially, processing each one in order.
 
-        :param actions: 包含多个操作的字典列表
-        :return: 执行结果，包含最终状态和错误信息（如果有的话）
+        :param actions: A list of dictionaries, each containing an action and its options.
+        :return: A dictionary containing the processed actions and any pending actions.
         """
         self.pending_actions = actions.copy()
         while self.pending_actions:

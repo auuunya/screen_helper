@@ -2,17 +2,18 @@ import string
 import random
 import os
 import cv2
+import re
 import numpy as np
 from typing import List, Tuple, Optional
 
 def generate_random_string(length=8, use_letters=True, use_digits=True, use_punctuation=False):
     """
-    生成一个随机字符串
-    :param length: 随机字符串的长度
-    :param use_letters: 是否包含字母（默认是 True）
-    :param use_digits: 是否包含数字（默认是 True）
-    :param use_punctuation: 是否包含特殊字符（默认是 False）
-    :return: 随机字符串
+    Generate a random string.
+    :param length: Length of the random string.
+    :param use_letters: Whether to include letters (default is True).
+    :param use_digits: Whether to include digits (default is True).
+    :param use_punctuation: Whether to include special characters (default is False).
+    :return: A random string.
     """
     characters = ""
     if use_letters:
@@ -23,18 +24,19 @@ def generate_random_string(length=8, use_letters=True, use_digits=True, use_punc
         characters += string.punctuation
 
     if not characters:
-        raise ValueError("至少需要包含一种字符类型（字母、数字或特殊字符）")
+        raise ValueError("At least one character type (letters, digits, or special characters) must be included.")
 
     return ''.join(random.choice(characters) for _ in range(length))
+
 def is_x11_environment():
-    """判断当前是否是 X11 环境"""
+    """Check if the current environment is X11."""
     display = os.environ.get("DISPLAY")
     return display is not None and display.startswith(":")
 
 def configure_xhost(enable: bool = True) -> None:
     """
-    配置 xhost 动态开启或关闭
-    :param enable: True 为启用 (xhost +), False 为禁用 (xhost -)
+    Configure xhost to enable or disable dynamically.
+    :param enable: True to enable (xhost +), False to disable (xhost -).
     """
     try:
         if enable:
@@ -46,18 +48,18 @@ def configure_xhost(enable: bool = True) -> None:
 
 def record_snapshot(image: np.ndarray, record_file: Optional[str] = "record_snapshot.png"):
     """
-    保存当前快照到指定路径
-    :param image: 要保存的屏幕快照 (numpy 数组格式)
-    :param record_file: 快照保存路径 (包含文件名及扩展名)，默认为 "record_snapshot.png"
+    Save the current snapshot to the specified path.
+    :param image: The screen snapshot to save (numpy array format).
+    :param record_file: The file path to save the snapshot (including filename and extension), defaults to "record_snapshot.png".
     """
     try:
         cv2.imwrite(record_file, image)
     except cv2.error as e:
-        raise ValueError(f"快照保存出错: {str(e)}")
+        raise ValueError(f"Error saving snapshot: {str(e)}")
 
 def load_image_file(template_path: str) -> np.ndarray:
     """
-    加载模板并处理可能的异常。
+    Load a template and handle potential exceptions.
     """
     try:
         context_template_ndarray = cv2.imread(template_path)
@@ -70,13 +72,13 @@ def draw_match(image: np.ndarray,
                 color: Tuple[int, int, int] = (0, 255, 0), 
                 thickness: int = 2) -> np.ndarray:
     """
-    在图像上绘制单个匹配的矩形框。
+    Draw a rectangle around a matched region in the image.
     
-    :param image: 原始图像
-    :param match: 匹配的字典，包含 'position' 和 'dimensions' 键
-    :param color: 矩形框的颜色，默认为绿色 (B, G, R)
-    :param thickness: 边框厚度，默认为 2
-    :return: 绘制矩形框后的图像
+    :param image: The original image.
+    :param match: A dictionary containing 'position' and 'dimensions' keys for the matched region.
+    :param color: The color of the rectangle (B, G, R), default is green.
+    :param thickness: The thickness of the rectangle border, default is 2.
+    :return: The image with the rectangle drawn around the matched region.
     """
     x, y = match["position"]
     width, height = match["dimensions"]
@@ -92,15 +94,49 @@ def draw_matches(
     thickness: int = 2,
 ) -> np.ndarray:
     """
-    批量绘制多个匹配到的图像区域矩形框，允许自定义颜色、边框宽度，并可选择保存图像。
+    Draw rectangles around multiple matched regions in the image, allowing customization of colors, border width, and saving the image.
     
-    :param image: 原始图像
-    :param matches: 匹配到的区域字典列表，每个字典包含 'position' 和 'dimensions' 键
-    :param color: 绘制框的颜色 (B, G, R)，默认为绿色
-    :param thickness: 矩形框的边框宽度，默认为 2
-    :return: 绘制所有匹配位置矩形框后的图像
+    :param image: The original image.
+    :param matches: A list of dictionaries containing matched region details, each with 'position' and 'dimensions' keys.
+    :param color: The color of the rectangles (B, G, R), default is green.
+    :param thickness: The thickness of the rectangle borders, default is 2.
+    :return: The image with rectangles drawn around all matched regions.
     """
     image_copy = image.copy()
     for match in matches:
         image_copy = draw_match(image_copy, match, color=color, thickness=thickness)
     return image_copy
+
+def match_title(text, pattern, match_mode="exact", ignore_case=False):
+    """
+    Compare the window title with the given pattern for matching.
+    
+    Parameters:
+    text (str): The window title to match.
+    pattern (str): The pattern to match, which can be a specific string or regular expression.
+    match_mode (str): The matching mode, supports the following options:
+                      - "exact": Exact match, the window title must exactly match the pattern.
+                      - "contains": Contains match, checks if the window title contains the pattern.
+                      - "regex": Regex match, uses the regular expression pattern to match.
+    ignore_case (bool): Whether to ignore case when matching. If True, case is ignored.
+    
+    Returns:
+    bool: True if the window title matches the pattern, False otherwise.
+    
+    Exceptions:
+    ValueError: Raised if the matching mode is invalid or the regular expression is invalid.
+    """
+    if ignore_case:
+        text = text.lower()
+        pattern = pattern.lower()
+    if match_mode == "exact":
+        return text == pattern
+    elif match_mode == "contains":
+        return pattern in text
+    elif match_mode == "regex":
+        try:
+            return re.search(pattern, text) is not None
+        except re.error:
+            raise ValueError(f"Invalid regular expression: {pattern}")
+    else:
+        raise ValueError(f"Invalid match mode: {match_mode}")

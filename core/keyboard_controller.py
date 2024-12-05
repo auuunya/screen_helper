@@ -6,9 +6,10 @@ class KeyboardController:
     @staticmethod
     def enter_text(text: str, delay: float = 0.05):
         """
-        输入给定的文本
-        :param text: 要输入的文本内容
-        :param delay: 每个字符之间的输入延迟（秒）
+        Enter the given text using the keyboard.
+
+        :param text: The text to input.
+        :param delay: The delay (in seconds) between each character.
         """
         pyautogui.typewrite(text, interval=delay)
 
@@ -18,13 +19,14 @@ class KeyboardController:
         result_type: Literal["clipboard", "none"] = "none"
     ) -> Optional[str]:
         """
-        执行快捷键组合，并返回指定类型的结果。
-        :param keys: 要执行的快捷键组合
-        :param result_type: 指定要返回的结果类型，"clipboard" 表示返回剪贴板内容，"none" 表示不返回任何内容
-        :return: 如果 `result_type` 为 "clipboard"，返回剪贴板内容；否则返回 None
+        Perform a hotkey combination and return the specified result.
+
+        :param keys: The keys to execute as a hotkey combination.
+        :param result_type: Specifies the type of result to return. "clipboard" returns the clipboard content, "none" returns nothing.
+        :return: If `result_type` is "clipboard", returns the clipboard content; otherwise, returns None.
         """
         pyautogui.hotkey(*keys)
-        
+
         if result_type == "clipboard":
             pyautogui.sleep(0.1)
             return ClipboardHandler.get_text()
@@ -34,8 +36,9 @@ class ClipboardHandler:
     @staticmethod
     def get_text() -> str:
         """
-        获取当前剪贴板的文本内容
-        :return: 剪贴板中的文本内容
+        Retrieve the current text content of the clipboard.
+
+        :return: The text content from the clipboard.
         """
         try:
             return pyperclip.paste()
@@ -45,10 +48,11 @@ class ClipboardHandler:
     @staticmethod
     def set_text(text: str):
         """
-        设置指定文本到剪贴板
-        :param text: 要复制到剪贴板的文本内容
+        Set the specified text to the clipboard.
+
+        :param text: The text content to copy to the clipboard.
         """
         try:
             pyperclip.copy(text)
         except Exception as e:
-            raise ValueError(f"无法复制到剪贴板: {str(e)}")
+            raise ValueError(f"Failed to copy to clipboard: {str(e)}")

@@ -1,5 +1,20 @@
+# This class contains constants used throughout the automation framework for various actions, window states, 
+# mouse operations, text interactions, and key bindings. These constants provide a central place to manage 
+# the definitions of common actions and identifiers that are used in the framework to perform automation tasks.
+# 
+# Constants are organized into categories for easier reference:
+# - General action types like screenshot capture and text input.
+# - Mouse actions such as click, drag, and scroll.
+# - Directional commands for movement.
+# - Hotkey definitions like CTRL, ALT, SHIFT, and others.
+# - Window management actions like open, close, maximize, and minimize.
+# - Text manipulation commands such as send, find, copy, paste, and clear text.
+
 class ScreenHelperDefs:
+    # General threshold for image matching
     CV_THRESHOLD = 0.8
+    
+    # General keys for options and configurations
     ACTION_TYPE_TEXT = "action_type_text"
     OPTIONS = "options"
     METHOD = "method"
@@ -9,12 +24,13 @@ class ScreenHelperDefs:
     EXECUTION_IDENTIFIER = "execution_identifier"
     DIRECTION = "direction"
 
+    # Context definitions for actions
     CONTEXT_TEMPLATE = "template"
     CONTEXT_POSITION = "position"
     CONTEXT_THRESHOLD = "threshold"
     CONTEXT_OFFSET = "offset"
 
-    # action_type 定义
+    # Action types
     ACTION_TAKE_SCREENSHOT = "take_screenshot"
     ACTION_FIND_IMAGE = "find_image"
     ACTION_FIND_TEXT = "find_text"
@@ -26,7 +42,7 @@ class ScreenHelperDefs:
     ACTION_HANDLE_WINDOW = "handle_window"
     ACTION_EXIT_APPLICATION = "exit_application"
 
-    # mouse 定义
+    # Mouse action types
     MOVE = "move"
     CLICK = "click"
     DOUBLE = "double"
@@ -34,14 +50,14 @@ class ScreenHelperDefs:
     DROP = "drop"
     SCROLL = "scroll"
     
-    # Direction 定义
+    # Direction definitions
     UP = "up"
     DOWN = "down"
     LEFT = "left"
     RIGHT = "right"
     MIDDLE = "middle"
 
-    # Hotkey 定义
+    # Hotkey definitions
     CTRL = "ctrl"
     ALT = "alt"
     SHIFT = "shift"
@@ -53,7 +69,7 @@ class ScreenHelperDefs:
     UP = "up"
     DOWN = "down"
 
-    # window 定义
+    # Window state definitions
     OPEN = "open"
     CLOSE = "close"
     MAXIMIZE = "maximize"
@@ -61,7 +77,7 @@ class ScreenHelperDefs:
     RESTORE = "restore"
     SWITCH = "switch"
 
-    # 文本定义
+    # Text interaction definitions
     SEND_TEXT = "send_text"
     FIND_TEXT = "find_text"
     COPY_TEXT = "copy_text"

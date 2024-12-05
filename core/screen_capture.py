@@ -5,17 +5,30 @@ import glob
 import numpy as np
 import mss
 import cv2
+
 class ScreenCapture:
+    """
+    Screen capture class that uses mss.mss to capture screenshots.
+
+    This class provides methods for capturing the full screen or a specific region and saving screenshots to directories.
+
+    Methods:
+        - create_directory: Creates a directory to save screenshots.
+        - capture: Captures a screenshot of the current screen or a specified region.
+    """
+
     def __init__(self):
         """
-        初始化屏幕捕获类，创建 mss.mss 实例以进行屏幕截图
+        Initializes the ScreenCapture class and creates an mss.mss instance for screen capturing.
         """
         self.sct = mss.mss()
 
-    def create_directory(self, dirs):
+    def create_directory(self, dirs: str):
         """
-        创建截图保存目录
-        :params dirs: 传入目录
+        Create a directory for saving screenshots.
+
+        :param dirs: Directory path where screenshots will be saved.
+        :raises ValueError: If there is an error creating the directory.
         """
         try:
             if os.path.exists(dirs):
@@ -27,13 +40,15 @@ class ScreenCapture:
             else:
                 os.makedirs(dirs)
         except OSError as e:
-            raise ValueError(f"生成截图目录出错: {str(e)}")
+            raise ValueError(f"Error creating screenshot directory: {str(e)}")
         
     def capture(self, region: Optional[Tuple[int, int, int, int]] = None) -> np.ndarray:
         """
-        捕获当前屏幕截图
-        :param region: 可选，指定截取的区域 (格式为: (left, top, right, bottom))
-        :return: 截取的屏幕图像，以 numpy 数组格式返回
+        Capture a screenshot of the current screen or a specified region.
+
+        :param region: Optional, the region to capture in the format (left, top, right, bottom).
+                       If not provided, the entire screen is captured.
+        :return: A screenshot of the screen or region, returned as a numpy array.
         """
         if region:
             monitor = {
@@ -46,4 +61,3 @@ class ScreenCapture:
             monitor = self.sct.monitors[1]
         screenshot = self.sct.grab(monitor)
         return cv2.cvtColor(np.array(screenshot), cv2.COLOR_BGRA2BGR)
-    

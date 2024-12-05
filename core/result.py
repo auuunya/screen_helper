@@ -1,39 +1,51 @@
 class Result:
     """
-    结果类，用于封装操作的结果信息。
+    Result class for encapsulating the outcome of an operation.
 
-    :param success: 表示操作是否成功的布尔值。
-    :param data: 可选，操作成功时返回的数据。默认为 None。
-    :param error: 可选，操作失败时的错误信息。默认为 None。
+    :param success: A boolean indicating whether the operation was successful.
+    :param data: Optional, data returned when the operation is successful. Defaults to None.
+    :param error: Optional, error message when the operation fails. Defaults to None.
 
-    示例:
+    Example:
         result = Result(success=True, data={"key": "value"})
         if result.success:
-            print("操作成功:", result.data)
+            print("Operation successful:", result.data)
         else:
-            print("操作失败:", result.error)
+            print("Operation failed:", result.error)
     """
 
     def __init__(self, success: bool, data=None, error=None):
+        """
+        Initialize a Result object.
+
+        :param success: Boolean indicating if the operation succeeded.
+        :param data: Optional data associated with a successful operation.
+        :param error: Optional error message in case of failure.
+        """
         self.success = success
         self.data = data
         self.error = error
 
     def __repr__(self):
+        """
+        Return a string representation of the Result object.
+
+        :return: A string showing the success, data, and error.
+        """
         return f"<Result(success={self.success}, data={self.data}, error={self.error})>"
 
     def is_success(self) -> bool:
         """
-        检查操作是否成功。
+        Check if the operation was successful.
 
-        :return: 如果操作成功，返回 True；否则返回 False。
+        :return: True if the operation was successful, False otherwise.
         """
         return self.success
 
     def __bool__(self) -> bool:
         """
-        支持布尔上下文的使用。
+        Support for boolean context.
 
-        :return: 如果操作成功，返回 True；否则返回 False。
+        :return: True if the operation was successful, False otherwise.
         """
         return self.success is True
