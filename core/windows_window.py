@@ -1,7 +1,7 @@
 from typing import List, Dict, Optional, Tuple, Union, Any
 import ctypes
 from ctypes import wintypes
-from utils import match_title
+from core.utils import match_title
 
 import ctypes
 from ctypes import wintypes

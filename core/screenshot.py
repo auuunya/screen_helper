@@ -1,7 +1,4 @@
 from typing import Tuple, Optional
-import os
-import glob
-
 import numpy as np
 import mss
 import cv2
@@ -22,25 +19,6 @@ class ScreenCapture:
         Initializes the ScreenCapture class and creates an mss.mss instance for screen capturing.
         """
         self.sct = mss.mss()
-
-    def create_directory(self, dirs: str):
-        """
-        Create a directory for saving screenshots.
-
-        :param dirs: Directory path where screenshots will be saved.
-        :raises ValueError: If there is an error creating the directory.
-        """
-        try:
-            if os.path.exists(dirs):
-                for file in glob.glob(os.path.join(dirs, "*")):
-                    try:
-                        os.remove(file)
-                    except OSError as e:
-                        print(f"Error deleting file {file}: {e}")
-            else:
-                os.makedirs(dirs)
-        except OSError as e:
-            raise ValueError(f"Error creating screenshot directory: {str(e)}")
         
     def capture(self, region: Optional[Tuple[int, int, int, int]] = None) -> np.ndarray:
         """

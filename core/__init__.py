@@ -16,27 +16,31 @@
 # - The module uses platform-specific configurations to select the appropriate window management implementation.
 # 
 # Please refer to the documentation for installation and usage instructions.
+import platform
+system_name = platform.system()
+character = "\r\n" if system_name == "Windows" else "\n"
+spacing = "GBK" if system_name == "Windows" else "utf-8"
+
 from .utils import is_x11_environment, configure_xhost
 if is_x11_environment():
     configure_xhost(enable=True)
 
-from .config import BaseConfig
 import warnings
-if BaseConfig.system_name == "Windows":
-    from .windows_window_manage import WindowManager
-elif BaseConfig.system_name != "Linux":
-    warnings.warn("暂不支持的操作系统类型")
+if system_name == "Windows":
+    from .windows_window import WindowManager
+elif system_name != "Linux":
+    warnings.warn("Types of operating systems not supported at this time.")
 else:
-    from .linux_window_manage import WindowManager
+    from .linux_window import WindowManager
 
 from .defs import ScreenHelperDefs
 from .file_manager import FileManager
 from .image_matcher import ImageMatcher
 from .logger import LoggerController
-from .ocr_base import OCRRecognizer
+from .ocr import OCRRecognizer
 from .result import Result
-from .text_recognizer import TextRecognizer
-from .screen_helper import ScreenHelper
-from .screen_capture import ScreenCapture
-from .mouse_controller import MouseController
-from .keyboard_controller import KeyboardController
+from .text_rec import TextRec
+from .screen import ScreenHelper
+from .screenshot import ScreenCapture
+from .mouse import MouseController
+from .keyboard import KeyboardController

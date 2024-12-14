@@ -1,6 +1,6 @@
-from typing import Dict, Any, Union
-import numpy as np
 import pytesseract
+from typing import Any, Dict, Union
+import numpy as np
 from pytesseract import Output
 
 class BaseOCR:
@@ -9,11 +9,12 @@ class BaseOCR:
     Provides methods for recognizing text and formatting the results.
     """
 
-    def recognize_text(self, image: np.ndarray) -> Union[Dict[str, Any], str]:
+    def recognize_text(self, image: np.ndarray, resized_image: np.ndarray = None) -> Union[Dict[str, Any], str]:
         """
         Recognize text content in an image.
         
         :param image: The image to be processed, in NumPy array format.
+        :param resized_image: The resized image (if any), defaults to None.
         :return: Recognition result, which can be a dictionary or a string, depending on the implementation.
         """
         raise NotImplementedError("This method should be overridden by subclasses.")
@@ -42,17 +43,43 @@ class TesseractOCR(BaseOCR):
         """
         self.kwargs = kwargs
 
-    def recognize_text(self, image: np.ndarray) -> Dict[str, Any]:
+    def recognize_text(self, original_image: np.ndarray, resized_image: np.ndarray = None) -> Dict[str, Any]:
         """
         Use Tesseract to recognize text from the given image.
         
-        :param image: The image to be processed, in NumPy array format.
+        :param original_image: The original image to be processed.
+        :param resized_image: The resized image (if any), defaults to None.
         :return: The formatted OCR recognition result as a dictionary.
         """
         if 'output_type' not in self.kwargs:
             self.kwargs['output_type'] = Output.DICT
-        raw_result = pytesseract.image_to_data(image, **self.kwargs)
+
+        # If resized_image is not provided, use the original image for OCR
+        if resized_image is None:
+            raw_result = pytesseract.image_to_data(original_image, **self.kwargs)
+        else:
+            scale_factor = self._compute_scale_factor(original_image, resized_image)
+            raw_result = pytesseract.image_to_data(resized_image, **self.kwargs)
+
+            # Adjust coordinates if resizing was done
+            raw_result = self._adjust_coordinates_to_original(raw_result, scale_factor)
+        
         return self.format_result(raw_result)
+
+    def _compute_scale_factor(self, original_image: np.ndarray, resized_image: np.ndarray) -> float:
+        """Compute the scale factor between the original and resized image."""
+        original_height, original_width = original_image.shape[:2]
+        resized_height, resized_width = resized_image.shape[:2]
+        return resized_width / original_width
+
+    def _adjust_coordinates_to_original(self, raw_result: Any, scale_factor: float) -> Any:
+        """Adjust the coordinates of OCR results based on the scale factor."""
+        for i in range(len(raw_result['text'])):
+            raw_result['left'][i] = int(raw_result['left'][i] / scale_factor)
+            raw_result['top'][i] = int(raw_result['top'][i] / scale_factor)
+            raw_result['width'][i] = int(raw_result['width'][i] / scale_factor)
+            raw_result['height'][i] = int(raw_result['height'][i] / scale_factor)
+        return raw_result
 
     def format_result(self, raw_result: Any) -> Dict[str, Any]:
         """
@@ -105,11 +132,12 @@ class OCRRecognizer:
         """
         self.ocr = OCRFactory.create_ocr_engine(ocr_engine, **kwargs)
 
-    def recognize_text(self, image: np.ndarray) -> Dict[str, Any]:
+    def recognize_text(self, original_image: np.ndarray, resized_image: np.ndarray = None) -> Dict[str, Any]:
         """
         Recognize text from the given image using the configured OCR engine.
         
-        :param image: The image to be processed, in NumPy array format.
+        :param original_image: The original image to be processed.
+        :param resized_image: The resized image (if any), defaults to None.
         :return: The OCR recognition result as a dictionary.
         """
-        return self.ocr.recognize_text(image)
+        return self.ocr.recognize_text(original_image, resized_image)

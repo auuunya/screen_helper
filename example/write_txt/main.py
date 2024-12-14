@@ -6,18 +6,12 @@ import time
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from core import (
-    BaseConfig,
-    ScreenHelperDefs,
-    FileManager,
     ImageMatcher,
     KeyboardController,
-    LoggerController,
     MouseController,
     OCRRecognizer,
-    Result,
     ScreenCapture,
-    TextRecognizer,
-    WindowManager,
+    TextRec,
     ScreenHelper,
     utils
 )
@@ -25,14 +19,18 @@ from core import (
 def screenshot_record_file(filename):
     screen_capture = ScreenCapture()
     arr = screen_capture.capture()
-    screen_capture.record_snapshot(arr, filename)
+    utils.record_snapshot(arr, filename)
     return arr
 
 def match_template_and_move(screen, template):
     image_matcher = ImageMatcher()
-    screen_arr = utils.load_image_file(screen)
-    template_arr = utils.load_image_file(template)
-    matches = image_matcher.find_template_locations(screen_arr, template_arr)
+    screen_arr = utils.load_entity_file(screen)
+    template_arr = utils.load_entity_file(template)
+    matches = image_matcher.find_template_locations(
+        original_image=screen_arr, 
+        original_template=template_arr,
+        threshold=0.7
+    )
     position = matches[0]["position"]
     MouseController.move_cursor(position[0], position[1])
 
@@ -41,11 +39,11 @@ def cursor_click(action="left"):
     MouseController.click_at(cur_pos[0], cur_pos[1], action)
 
 def find_text_pos(screen, target_text, contexts):
-    s_arr = utils.load_image_file(screen)
+    s_arr = utils.load_entity_file(screen)
     ocr_engine = OCRRecognizer(ocr_engine="tesseract", lang='eng', config=r'--oem 3 --psm 11 -c tessedit_char_whitelist=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ& ')
     result = ocr_engine.recognize_text(s_arr)
-    textrecognizer = TextRecognizer()
-    find_pos = textrecognizer.find_text_position(result, target_text, contexts)
+    text_rec = TextRec()
+    find_pos = text_rec.find_position_on_context(result, target_text, contexts)
     pos = find_pos["position"]
     MouseController.move_cursor_with_offset(pos[0], pos[1], 0, 50)
     cur_pos = MouseController.get_cursor_position()
