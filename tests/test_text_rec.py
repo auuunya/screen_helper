@@ -7,14 +7,15 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(
 from core import TextRec
 from core import OCRRecognizer
 from core import utils
+from core import GraphicToolkit
 
 templates = os.path.join("X:\\tests", "templates")
 def test_image_match():
     textrec = TextRec()
-    template = utils.load_entity_file(f"{templates}/screenshot.png")
-    resize_template = utils.resize_entity(template, scale=2)
+    template = GraphicToolkit(f"{templates}/screenshot.png")
+    resize_template = template.resize_entity(scale=2)
     ocr_engine = OCRRecognizer(ocr_engine="tesseract", lang='eng', config=r'--oem 3 --psm 6')
-    result = ocr_engine.recognize_text(template, resize_template)
+    result = ocr_engine.recognize_text(template.get_entity(), resize_template)
     target_text = textrec.generate_text_config(
         "Dismiss"
     )
@@ -37,11 +38,38 @@ def test_image_match():
     if not contexts_matches:
         print (f"Text Match failure!")
         return
-    draw_target = utils.draw_matches(template, contexts_matches)
-    context = contexts_matches[0]["context_matches"]
-    if context:
-        context_matches_draw = utils.draw_matches(draw_target, context, (0,0,255))
-        utils.record_snapshot(context_matches_draw, f"{templates}/text_rec_drawed.png")
+    match = contexts_matches[0]
+    print (f"match: {match}")
+    drawed = utils.draw_shape(
+        template.get_entity(), 
+        "rectangle", 
+        position=(
+            int(match["position"][0] - (match["dimensions"][0] / 2)),
+            int(match["position"][1] - (match["dimensions"][1] / 2)),
+        ),
+        size=match["dimensions"],
+    )
+    context_matches = contexts_matches[0]["context_matches"]
+    shapes = []
+    positions = []
+    sizes = []
+    for context_match in context_matches:
+        shapes.append('rectangle')
+        positions.append(
+            (
+                int(context_match["position"][0] - (context_match["dimensions"][0] / 2)),
+                int(context_match["position"][1] - (context_match["dimensions"][1] / 2))
+            )
+        )
+        sizes.append(context_match["dimensions"])
+        drawed = utils.draw_shapes(
+            drawed, 
+            shapes,
+            positions,
+            sizes,
+            border_color=(0, 0, 255)
+        )
+    utils.record_snapshot(drawed, f"{templates}/text_rec_drawed.png")
 
 if __name__ == "__main__":
     test_image_match()

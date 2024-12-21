@@ -131,7 +131,6 @@ class TextRec:
                     matching_results.append(match)
 
         return matching_results if matching_results else None
-
     def _is_context_nearby(
         self, 
         ocr_data: Dict[str, List],  # OCR result dictionary
