@@ -89,12 +89,12 @@ class WindowManager:
                 ("right", ctypes.c_long),
                 ("bottom", ctypes.c_long)
             ]
-        rect = RECT()
-        if not self.user32.GetWindowRect(window_id, ctypes.byref(rect)):
+        region = RECT()
+        if not self.user32.GetWindowRect(window_id, ctypes.byref(region)):
             raise ValueError(f"GetWindowRect call failed, error code: {ctypes.GetLastError()}")
-        width = rect.right - rect.left
-        height = rect.bottom - rect.top
-        return rect.left, rect.top, height, width
+        width = region.right - region.left
+        height = region.bottom - region.top
+        return region.left, region.top, height, width
 
     @valid_hwnd
     def _is_window_visible(self, window_id: wintypes.HWND) -> bool:
@@ -213,14 +213,14 @@ class WindowManager:
         """
         title = self._window_title(window_id)
         class_name = self._window_class_name(window_id)
-        rect = self._get_window_rect(window_id)
+        region = self._get_window_rect(window_id)
         visible = self._is_window_visible(window_id)
         enabled = self._is_window_enabled(window_id)
         return {
             "window_id": window_id,
             "title": title,
             "class_name": class_name,
-            "rect": rect,
+            "region": region,
             "visible": visible,
             "enabled": enabled,
         }
@@ -295,3 +295,21 @@ class WindowManager:
         Placeholder method for closing or cleaning up resources (if needed)
         """
         pass
+    @valid_hwnd
+    def close_window(self, window_id):
+        """
+        windows close window for window_id
+        """
+        WM_CLOSE = 0x0010
+        result = self.user32.PostMessageW(window_id, WM_CLOSE, 0, 0)
+        if not result:
+            raise RuntimeError(f"无法关闭窗口: {window_id}")
+        return True
+    
+    def display_cursor(self, display = False):
+        """windows display cursor
+
+        Args:
+            display (bool, optional): true - hidden, false - show. Defaults to False.
+        """
+        self.user32.ShowCursor(display)

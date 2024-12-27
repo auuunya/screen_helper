@@ -314,13 +314,13 @@ class WindowManager:
         """
         title = self._window_title(window_id)
         class_name = self._window_class_name(window_id)
-        rect = self._get_window_rect(window_id)
+        region = self._get_window_rect(window_id)
         visible = self._is_window_visible(window_id)
         return {
             "window_id": window_id,
             "title": title,
             "class_name": class_name,
-            "rect": rect,
+            "region": region,
             "visible": visible,
             "enabled": "",
         }
@@ -395,3 +395,22 @@ class WindowManager:
         Close the connection to the X server.
         """
         self.display.close()
+    @valid_window
+    def close_window(self, window_id):
+        """
+        linux close window for window_id
+        """
+        window = self.display.create_resource_object('window', window_id)
+        window.destroy()
+        self.display.sync()
+        return True
+
+    def display_cursor(self, display = False):
+        """linux display cursor
+
+        Args:
+            display (bool, optional): true - hidden, false - show. Defaults to False.
+        """
+        event_mask = Xlib.X.EnterWindowMask if display else Xlib.X.LeaveWindowMask
+        self.root.change_attributes(event_mask=event_mask)
+        self.display.sync()

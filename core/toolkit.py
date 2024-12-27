@@ -32,8 +32,8 @@ class ScreenToolkit:
             monitor = {
                 "top": region[1],
                 "left": region[0],
-                "width": region[2] - region[0],
-                "height": region[3] - region[1],
+                "width": region[2],
+                "height": region[3],
             }
         else:
             monitor = self.sct.monitors[1]
