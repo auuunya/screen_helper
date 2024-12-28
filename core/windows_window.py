@@ -76,7 +76,7 @@ class WindowManager:
         return buffer.value
 
     @valid_hwnd
-    def _get_window_rect(self, window_id: wintypes.HWND) -> Tuple[int, int, int, int]:
+    def _get_window_region(self, window_id: wintypes.HWND) -> Tuple[int, int, int, int]:
         """
         Get the window's rectangle position
         :param window_id: Window handle
@@ -94,7 +94,7 @@ class WindowManager:
             raise ValueError(f"GetWindowRect call failed, error code: {ctypes.GetLastError()}")
         width = region.right - region.left
         height = region.bottom - region.top
-        return region.left, region.top, height, width
+        return region.left, region.top, width, height
 
     @valid_hwnd
     def _is_window_visible(self, window_id: wintypes.HWND) -> bool:
@@ -213,7 +213,7 @@ class WindowManager:
         """
         title = self._window_title(window_id)
         class_name = self._window_class_name(window_id)
-        region = self._get_window_rect(window_id)
+        region = self._get_window_region(window_id)
         visible = self._is_window_visible(window_id)
         enabled = self._is_window_enabled(window_id)
         return {

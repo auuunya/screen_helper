@@ -132,7 +132,7 @@ class WindowManager:
             return ""
 
     @valid_window
-    def _get_window_rect(self, window_id: int) -> Tuple[int, int, int, int]:
+    def _get_window_region(self, window_id: int) -> Tuple[int, int, int, int]:
         """
         Retrieve the geometry information of a specified window.
 
@@ -150,7 +150,7 @@ class WindowManager:
             if parent.id == self.root.id:
                 break
             window = parent
-        return x, y, geom.height, geom.width
+        return x, y, geom.width, geom.height
 
     @valid_window
     def _is_window_visible(self, window_id: int) -> bool:
@@ -314,7 +314,7 @@ class WindowManager:
         """
         title = self._window_title(window_id)
         class_name = self._window_class_name(window_id)
-        region = self._get_window_rect(window_id)
+        region = self._get_window_region(window_id)
         visible = self._is_window_visible(window_id)
         return {
             "window_id": window_id,
