@@ -1,5 +1,5 @@
 from typing import List, Tuple, Optional, Dict
-
+import utils
 class TextRec:
     """
     A class for recognizing and matching text in OCR data, including finding positions
@@ -11,12 +11,12 @@ class TextRec:
         Generate a configuration dictionary for the target text with optional parameters.
 
         :param text: The target text to search for.
-        :param kwargs: Additional configuration options, such as 'exact', 'min_conf', and 'case'.
+        :param kwargs: Additional configuration options, such as 'match_mode', 'min_conf', and 'case'.
         :return: A dictionary containing the target text and its configuration.
         """
         config = {
             "text": text,
-            "exact": kwargs.get("exact", True),
+            "match_mode": kwargs.get("match_mode", "contains"),
             "min_conf": kwargs.get("min_conf", 0),
             "case": kwargs.get("case", True),
             **kwargs
@@ -37,21 +37,17 @@ class TextRec:
         center_y = int(top + 0.5 * height)
         return center_x, center_y
 
-    def _is_text_match(self, text: str, target: str, exact: bool, case: bool) -> bool:
+    def _is_text_match(self, text: str, target: str, match_mode: str, case: bool) -> bool:
         """
         Check if a given text matches the target text according to the specified matching rules.
 
         :param text: The text to be matched.
         :param target: The target text to match against.
-        :param exact: Whether the match should be exact or partial.
+        :param match_mode: Whether the match should be "contains","exact",reg, or partial.
         :param case: Whether the match should be case-sensitive.
         :return: True if the text matches the target, otherwise False.
         """
-        processed_text = text if case else text.lower()
-        processed_target = target if case else target.lower()
-        if exact:
-            return processed_text == processed_target
-        return processed_target in processed_text
+        return utils.match_text(text, target, match_mode, case)
 
     def find_matching_text_positions(
         self,
@@ -62,11 +58,11 @@ class TextRec:
         Find all positions of matching text based on OCR data and target configuration.
 
         :param ocr_data: OCR result dictionary containing keys 'text', 'left', 'top', 'width', 'height', 'conf'.
-        :param target_config: Configuration dictionary for the target text with keys like 'text', 'exact', 'min_conf', 'case'.
+        :param target_config: Configuration dictionary for the target text with keys like 'text', 'match_mode', 'min_conf', 'case'.
         :return: A list of dictionaries containing the matched text and its position and dimensions. If no match is found, return None.
         """
         target_text = target_config.get("text", "")
-        exact = target_config.get("exact", True)
+        match_mode = target_config.get("match_mode", "contains")
         min_conf = target_config.get("min_conf", 0)
         case = target_config.get("case", True)
         
@@ -76,7 +72,7 @@ class TextRec:
             if ocr_data['conf'][i] < min_conf:
                 continue
             
-            if self._is_text_match(word, target_text, exact, case):
+            if self._is_text_match(word, target_text, match_mode, case):
                 x, y, w, h = ocr_data['left'][i], ocr_data['top'][i], ocr_data['width'][i], ocr_data['height'][i]
                 center_position = self._calculate_center_position(x, y, w, h)
                 matching_positions.append({
@@ -149,23 +145,24 @@ class TextRec:
         """
         context_text = context_config.get("text")
         offset = context_config.get("offset", {"x": 0, "y": 0})
-        exact = context_config.get("exact", True)
+        match_mode = context_config.get("match_mode", "contains")
         min_conf = context_config.get("min_conf", 0)
         case = context_config.get("case", True)
 
         if not context_text:
             return None
 
-        context_lower = context_text.lower() if not case else context_text
+        # context_lower = context_text.lower() if not case else context_text
         current_center = (target_x, target_y)
 
         for idx, word in enumerate(ocr_data['text']):
             if ocr_data['conf'][idx] < min_conf:
                 continue
 
-            word_to_compare = word if case else word.lower()
+            # word_to_compare = word if case else word.lower()
             # Match the context text
-            if (exact and word_to_compare == context_lower) or (not exact and context_lower in word_to_compare):
+            # if (exact and word_to_compare == context_lower) or (not exact and context_lower in word_to_compare):
+            if utils.match_text(word, context_text, match_mode, case):
                 left, top = ocr_data['left'][idx], ocr_data['top'][idx]
                 word_width, word_height = ocr_data['width'][idx], ocr_data['height'][idx]
                 context_center = self._calculate_center_position(left, top, word_width, word_height)

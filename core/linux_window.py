@@ -3,7 +3,7 @@ import Xlib.display
 import Xlib.X
 import Xlib.protocol
 from typing import List, Dict, Optional, Tuple, Union
-from utils import match_title
+from utils import match_text
 
 """
 Xlib-based Window Manager
@@ -365,7 +365,7 @@ class WindowManager:
         If `window_obj` is a list of windows, iterate through the list to find a matching window.
         """
         if isinstance(window_obj, dict):
-            return match_title(window_obj["title"], title, match_mode, ignore_case)
+            return match_text(window_obj["title"], title, match_mode, ignore_case)
         elif isinstance(window_obj, list):
             return self.find_matching_window(window_obj, title, match_mode, ignore_case)
         else:
@@ -386,7 +386,7 @@ class WindowManager:
         :return: A dictionary representing the matched window, or None if no match is found.
         """
         for window in all_window:
-            if match_title(window["title"], title, match_mode, ignore_case):
+            if match_text(window["title"], title, match_mode, ignore_case):
                 return window
         return None
 

@@ -124,7 +124,7 @@ def draw_shapes(
         result_image = draw_shape(result_image, shape, position, size, color=border_color, thickness=border_thickness)
     return result_image
 
-def match_title(
+def match_text(
     text: str, 
     pattern: str, 
     match_mode: str = "exact", 
