@@ -1,63 +1,79 @@
-import os
 import logging
+import os
 from logging.handlers import TimedRotatingFileHandler
 
 class LoggerController:
     """
-    A controller class to manage logging configuration and operations.
+    LoggerController is a singleton class responsible for managing logging functionality.
+    It supports both console and file-based logging and adapts log levels based on debug settings.
     """
-    logger = None
+    _logger = None
 
-    @staticmethod
-    def setup_logger(name: str, debug: bool = False, log_file_name: str = "screen_helper") -> None:
+    @classmethod
+    def setup_logger(cls, name: str, debug: bool = False, log_file: str = "engine.log"):
         """
-        Configure the logger with different levels of logging based on the debug parameter.
-        :param name: The name of the logger.
-        :param debug: If True, set logging level to DEBUG; otherwise, set it to INFO.
-        :param log_file_name: The base name of the log file.
+        Configures the logger with the specified settings.
+
+        :param name: Name of the logger.
+        :param debug: Enables debug mode if set to True; otherwise uses INFO level.
+        :param log_file: Name of the log file when logging to a file.
         """
-        if LoggerController.logger is None:
-            LoggerController.logger = logging.getLogger(name)
-            if LoggerController.logger.hasHandlers():
-                LoggerController.logger.handlers.clear()
-            LoggerController.logger.setLevel(logging.DEBUG if debug else logging.INFO)
-            LoggerController.logger.propagate = False
-            if debug:
-                # Use console output for debug logging
-                handler = logging.StreamHandler()
-            else:
-                # Use a rotating file handler for non-debug logging
-                log_file = os.path.join(os.getcwd(), f"{log_file_name}.log")
-                handler = TimedRotatingFileHandler(log_file, when="midnight", interval=1, backupCount=7)
-                handler.suffix = "%Y-%m-%d"
-            # Set log format
+        if cls._logger is None:
+            cls._logger = logging.getLogger(name)
+            cls._logger.setLevel(logging.DEBUG if debug else logging.INFO)
+            cls._logger.propagate = False
+
+            if cls._logger.hasHandlers():
+                cls._logger.handlers.clear()
+
+            handler = cls._get_handler(debug, log_file)
             formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
             handler.setFormatter(formatter)
-            LoggerController.logger.addHandler(handler)
+            cls._logger.addHandler(handler)
 
-    @staticmethod
-    def log_info(message: str) -> None:
+    @classmethod
+    def _get_handler(cls, debug: bool, log_file: str):
         """
-        Log an informational message.
+        Returns an appropriate logging handler based on the debug setting.
+
+        :param debug: Determines whether to log to console or to a file.
+        :param log_file: Name of the log file for file-based logging.
+        :return: A logging handler instance.
+        """
+        if debug:
+            return logging.StreamHandler()
+
+        log_path = os.path.join(os.getcwd(), log_file)
+        file_handler = TimedRotatingFileHandler(log_path, when="midnight", interval=1, backupCount=7)
+        file_handler.suffix = "%Y-%m-%d"
+        return file_handler
+
+    @classmethod
+    def log_info(cls, message: str):
+        """
+        Logs an informational message.
+
         :param message: The message to log.
         """
-        if LoggerController.logger:
-            LoggerController.logger.info(message)
+        if cls._logger:
+            cls._logger.info(message)
 
-    @staticmethod
-    def log_debug(message: str) -> None:
+    @classmethod
+    def log_debug(cls, message: str):
         """
-        Log a debug-level message.
+        Logs a debug message.
+
         :param message: The message to log.
         """
-        if LoggerController.logger:
-            LoggerController.logger.debug(message)
+        if cls._logger:
+            cls._logger.debug(message)
 
-    @staticmethod
-    def log_error(message: str) -> None:
+    @classmethod
+    def log_error(cls, message: str):
         """
-        Log an error-level message.
+        Logs an error message.
+
         :param message: The message to log.
         """
-        if LoggerController.logger:
-            LoggerController.logger.error(message)
+        if cls._logger:
+            cls._logger.error(message)
